@@ -12,6 +12,7 @@ import { Train as TrainIcon, Clock, MapPin } from "lucide-react";
 
 const Train = () => {
   const navigate = useNavigate();
+  const TEMP_USER_ID = "00000000-0000-0000-0000-000000000000";
   const [destination, setDestination] = useState<string>("");
   const [arrivalTime, setArrivalTime] = useState<string>("");
   const [routes, setRoutes] = useState<any[]>([]);
@@ -75,15 +76,8 @@ const Train = () => {
 
   const registerRoute = async (route: any) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("로그인이 필요합니다.");
-        navigate("/auth");
-        return;
-      }
-
       const { error } = await supabase.from("trips").insert({
-        user_id: user.id,
+        user_id: TEMP_USER_ID,
         destination_station: destination,
         arrival_time: arrivalTime,
         route_type: route.type,

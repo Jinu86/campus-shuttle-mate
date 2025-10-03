@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Utensils } from "lucide-react";
 
 const Cafeteria = () => {
+  const TEMP_USER_ID = "00000000-0000-0000-0000-000000000000";
   const [menus, setMenus] = useState<any[]>([]);
   const [menuAlarm, setMenuAlarm] = useState(false);
 
@@ -33,13 +34,10 @@ const Cafeteria = () => {
 
   const loadSettings = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       const { data, error } = await supabase
         .from("user_settings")
         .select("menu_alarm_enabled")
-        .eq("user_id", user.id)
+        .eq("user_id", TEMP_USER_ID)
         .maybeSingle();
 
       if (error) throw error;
@@ -51,16 +49,14 @@ const Cafeteria = () => {
 
   const toggleMenuAlarm = async (enabled: boolean) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("로그인이 필요합니다.");
-        return;
-      }
-
       const { error } = await supabase
         .from("user_settings")
-        .update({ menu_alarm_enabled: enabled })
-        .eq("user_id", user.id);
+        .upsert({ 
+          user_id: TEMP_USER_ID,
+          menu_alarm_enabled: enabled 
+        }, {
+          onConflict: 'user_id'
+        });
 
       if (error) throw error;
 

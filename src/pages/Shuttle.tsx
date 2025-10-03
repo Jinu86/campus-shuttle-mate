@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const Shuttle = () => {
+  const TEMP_USER_ID = "00000000-0000-0000-0000-000000000000";
   const [shuttles, setShuttles] = useState<any[]>([]);
   const [selectedShuttle, setSelectedShuttle] = useState<any>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -40,14 +41,8 @@ const Shuttle = () => {
 
   const setAlarm = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("로그인이 필요합니다.");
-        return;
-      }
-
       const { error } = await supabase.from("alarms").insert({
-        user_id: user.id,
+        user_id: TEMP_USER_ID,
         alarm_type: "SHUTTLE",
         target_id: selectedShuttle.id,
         minutes_before: parseInt(minutesBefore),

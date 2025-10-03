@@ -10,7 +10,7 @@ import { toast } from "sonner";
 
 const Index = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
+  const TEMP_USER_ID = "00000000-0000-0000-0000-000000000000";
   const [trip, setTrip] = useState<any>(null);
   const [shuttles, setShuttles] = useState<any[]>([]);
   const [menu, setMenu] = useState<any>(null);
@@ -18,23 +18,13 @@ const Index = () => {
   const [countdown, setCountdown] = useState<string>("");
 
   useEffect(() => {
-    checkUser();
+    loadData();
   }, []);
 
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-    setUser(user);
-    loadData(user.id);
-  };
-
-  const loadData = async (userId: string) => {
+  const loadData = async () => {
     try {
       const [tripResult, shuttleResult, menuResult] = await Promise.all([
-        supabase.from("trips").select("*").eq("user_id", userId).maybeSingle(),
+        supabase.from("trips").select("*").eq("user_id", TEMP_USER_ID).maybeSingle(),
         supabase.from("shuttle_schedules").select("*").eq("day_type", "평일").order("departure_time"),
         supabase.from("cafeteria_menus").select("*").eq("date", new Date().toISOString().split('T')[0]).eq("meal_type", "점심").maybeSingle(),
       ]);
@@ -84,7 +74,7 @@ const Index = () => {
   }, [trip, shuttles]);
 
   const handleModalSuccess = () => {
-    if (user) loadData(user.id);
+    loadData();
   };
 
   const getMustTakeShuttle = () => {

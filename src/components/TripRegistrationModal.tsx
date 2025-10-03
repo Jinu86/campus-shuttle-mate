@@ -14,6 +14,7 @@ interface TripRegistrationModalProps {
 }
 
 const TripRegistrationModal = ({ open, onOpenChange, onSuccess }: TripRegistrationModalProps) => {
+  const TEMP_USER_ID = "00000000-0000-0000-0000-000000000000";
   const [destination, setDestination] = useState<string>("");
   const [arrivalTime, setArrivalTime] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -23,11 +24,8 @@ const TripRegistrationModal = ({ open, onOpenChange, onSuccess }: TripRegistrati
     setLoading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("로그인이 필요합니다.");
-
       const { error } = await supabase.from("trips").insert({
-        user_id: user.id,
+        user_id: TEMP_USER_ID,
         destination_station: destination,
         arrival_time: arrivalTime,
       });

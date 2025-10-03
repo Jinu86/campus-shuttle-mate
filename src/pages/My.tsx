@@ -5,11 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { User, Train, Bell, LogOut } from "lucide-react";
+import { User, Train, Bell } from "lucide-react";
 
 const My = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
+  const TEMP_USER_ID = "00000000-0000-0000-0000-000000000000";
   const [trip, setTrip] = useState<any>(null);
   const [alarms, setAlarms] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>(null);
@@ -20,17 +20,10 @@ const My = () => {
 
   const loadUserData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
-      setUser(user);
-
       const [tripResult, alarmsResult, settingsResult] = await Promise.all([
-        supabase.from("trips").select("*").eq("user_id", user.id).maybeSingle(),
-        supabase.from("alarms").select("*").eq("user_id", user.id),
-        supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle(),
+        supabase.from("trips").select("*").eq("user_id", TEMP_USER_ID).maybeSingle(),
+        supabase.from("alarms").select("*").eq("user_id", TEMP_USER_ID),
+        supabase.from("user_settings").select("*").eq("user_id", TEMP_USER_ID).maybeSingle(),
       ]);
 
       if (tripResult.data) setTrip(tripResult.data);
@@ -67,11 +60,6 @@ const My = () => {
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast.success("로그아웃되었습니다.");
-    navigate("/auth");
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 pb-24">
@@ -84,23 +72,6 @@ const My = () => {
           <p className="text-muted-foreground mt-2">내 정보 관리</p>
         </div>
 
-        <Card className="shadow-medium">
-          <CardHeader>
-            <CardTitle>사용자 정보</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="text-sm text-muted-foreground">이메일</p>
-            <p className="font-medium">{user?.email}</p>
-            <Button 
-              onClick={handleLogout} 
-              variant="outline" 
-              className="w-full mt-4"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              로그아웃
-            </Button>
-          </CardContent>
-        </Card>
 
         <Card className="shadow-soft">
           <CardHeader>
