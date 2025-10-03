@@ -8,40 +8,40 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 210 100% 97%;
-    --foreground: 215 25% 27%;
+    --background: 213 33% 97%;
+    --foreground: 0 0% 20%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 27%;
+    --card-foreground: 0 0% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 27%;
+    --popover-foreground: 0 0% 20%;
 
-    --primary: 195 85% 55%;
+    --primary: 210 73% 58%;
     --primary-foreground: 0 0% 100%;
     
-    --primary-light: 195 85% 65%;
-    --primary-dark: 195 85% 45%;
+    --primary-light: 210 73% 68%;
+    --primary-dark: 210 73% 48%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 215 25% 27%;
+    --secondary: 213 20% 96%;
+    --secondary-foreground: 0 0% 20%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 213 20% 96%;
+    --muted-foreground: 210 11% 46%;
 
-    --accent: 25 95% 60%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 51 100% 50%;
+    --accent-foreground: 0 0% 20%;
     
-    --accent-light: 25 95% 70%;
+    --accent-light: 51 100% 60%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 195 85% 55%;
+    --border: 213 20% 93%;
+    --input: 213 20% 93%;
+    --ring: 210 73% 58%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
     
     --gradient-primary: linear-gradient(135deg, hsl(195, 85%, 55%), hsl(210, 85%, 65%));
     --gradient-accent: linear-gradient(135deg, hsl(25, 95%, 60%), hsl(35, 95%, 65%));

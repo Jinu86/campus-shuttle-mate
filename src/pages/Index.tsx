@@ -96,111 +96,110 @@ const Index = () => {
   const mustTakeShuttle = getMustTakeShuttle();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 pb-24">
-      <div className="max-w-screen-lg mx-auto p-4 space-y-4">
-        <div className="pt-8 pb-4">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent">
+    <div className="min-h-screen bg-background pb-20">
+      <div className="max-w-md mx-auto px-5 py-6 space-y-5">
+        <div className="pt-2 pb-1">
+          <h1 className="text-2xl font-bold text-foreground">
             오늘의 캠퍼스
           </h1>
-          <p className="text-muted-foreground mt-2">기차를 놓치지 마세요!</p>
         </div>
 
         {!trip ? (
-          <Card className="shadow-medium border-2 border-primary/20 hover:border-primary/40 transition-all">
-            <CardContent className="pt-6 text-center space-y-4">
-              <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-primary to-primary-light flex items-center justify-center">
-                <Clock className="w-8 h-8 text-white" />
+          <Card className="shadow-[0_2px_8px_rgba(0,0,0,0.08)] border-border bg-card">
+            <CardContent className="pt-8 pb-8 text-center space-y-5">
+              <div className="w-14 h-14 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+                <Clock className="w-7 h-7 text-primary" strokeWidth={1.5} />
               </div>
-              <div>
-                <p className="text-lg font-medium mb-2">예매하신 기차 시간에 맞춰</p>
-                <p className="text-lg font-medium mb-4">셔틀을 찾아드릴게요</p>
+              <div className="space-y-1">
+                <p className="text-base font-medium text-foreground leading-relaxed">예매하신 기차 시간에 맞춰</p>
+                <p className="text-base font-medium text-foreground leading-relaxed">셔틀을 찾아드릴게요</p>
               </div>
-              <Button onClick={() => setModalOpen(true)} size="lg" className="w-full max-w-xs">
+              <Button 
+                onClick={() => setModalOpen(true)} 
+                className="h-12 px-8 bg-primary hover:bg-primary-dark text-primary-foreground font-semibold rounded-lg shadow-[0_2px_8px_rgba(74,144,226,0.3)] transition-all hover:shadow-[0_4px_12px_rgba(74,144,226,0.4)]"
+              >
                 + 기차 시간 등록하기
               </Button>
             </CardContent>
           </Card>
         ) : (
-          <Card className="shadow-medium border-2 border-accent bg-gradient-to-br from-accent/10 to-accent/5">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-accent">
-                <AlertCircle className="w-6 h-6" />
+          <Card className="shadow-[0_2px_8px_rgba(0,0,0,0.08)] border-border bg-card">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-base font-bold text-foreground">
+                <AlertCircle className="w-5 h-5 text-accent" strokeWidth={2} />
                 이 셔틀에 꼭 타셔야 합니다!
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {mustTakeShuttle ? (
                 <>
-                  <div className="text-center">
-                    <p className="text-5xl font-bold text-accent mb-2">{countdown}</p>
-                    <p className="text-sm text-muted-foreground">남은 시간</p>
+                  <div className="text-center py-2">
+                    <p className="text-5xl font-black text-foreground mb-1">{countdown}</p>
+                    <p className="text-sm text-muted-foreground font-medium">남은 시간</p>
                   </div>
-                  <div className="bg-card rounded-lg p-4 space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">셔틀 출발</span>
-                      <span className="font-bold">{mustTakeShuttle.departure_time}</span>
+                  <div className="bg-muted rounded-lg p-4 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">셔틀 출발</span>
+                      <span className="text-base font-bold text-foreground">{mustTakeShuttle.departure_time}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">목적지</span>
-                      <span className="font-bold">{trip.destination_station}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">목적지</span>
+                      <span className="text-base font-bold text-foreground">{trip.destination_station}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">기차 도착</span>
-                      <span className="font-bold">{trip.arrival_time}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">기차 도착</span>
+                      <span className="text-base font-bold text-foreground">{trip.arrival_time}</span>
                     </div>
                   </div>
                 </>
               ) : (
-                <p className="text-center text-muted-foreground">탑승 가능한 셔틀이 없습니다.</p>
+                <p className="text-center text-muted-foreground py-4">탑승 가능한 셔틀이 없습니다.</p>
               )}
             </CardContent>
           </Card>
         )}
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card className="shadow-soft hover:shadow-medium transition-all cursor-pointer" onClick={() => navigate("/shuttle")}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bus className="w-5 h-5 text-primary" />
+        <div className="grid gap-4 grid-cols-2">
+          <Card className="shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] transition-all cursor-pointer border-border bg-card" onClick={() => navigate("/shuttle")}>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm font-bold text-foreground">
+                <Bus className="w-4 h-4 text-primary" strokeWidth={2} />
                 다음 셔틀
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
               {shuttles.length > 0 ? (
-                <div className="space-y-2">
-                  {shuttles.slice(0, 3).map((shuttle, idx) => (
-                    <div key={idx} className="flex justify-between items-center py-2 border-b last:border-0">
-                      <span className="font-medium">{shuttle.departure_time}</span>
-                      <span className="text-sm text-muted-foreground">{shuttle.destination}</span>
-                    </div>
-                  ))}
-                </div>
+                <>
+                  <div className="text-center py-1">
+                    <p className="text-4xl font-black text-foreground">{shuttles[0].departure_time}</p>
+                  </div>
+                  <p className="text-xs text-center text-muted-foreground font-medium">{shuttles[0].destination}</p>
+                </>
               ) : (
-                <p className="text-muted-foreground">셔틀 정보를 불러올 수 없습니다.</p>
+                <p className="text-sm text-muted-foreground text-center py-4">셔틀 정보 없음</p>
               )}
             </CardContent>
           </Card>
 
-          <Card className="shadow-soft hover:shadow-medium transition-all cursor-pointer" onClick={() => navigate("/cafeteria")}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Utensils className="w-5 h-5 text-accent" />
+          <Card className="shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] transition-all cursor-pointer border-border bg-card" onClick={() => navigate("/cafeteria")}>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm font-bold text-foreground">
+                <Utensils className="w-4 h-4 text-primary" strokeWidth={2} />
                 오늘의 학식
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-2">
               {menu ? (
-                <div className="space-y-2">
-                  <p className="font-medium">{menu.meal_type} 메뉴</p>
-                  <ul className="text-sm text-muted-foreground space-y-1">
+                <>
+                  <ul className="text-xs text-muted-foreground space-y-1.5 min-h-[60px]">
                     {menu.menu_items.slice(0, 3).map((item: string, idx: number) => (
-                      <li key={idx}>• {item}</li>
+                      <li key={idx} className="leading-relaxed">• {item}</li>
                     ))}
                   </ul>
-                  <p className="text-sm font-semibold text-primary mt-2">{menu.price?.toLocaleString()}원</p>
-                </div>
+                  <p className="text-base font-bold text-accent pt-1">{menu.price?.toLocaleString()}원</p>
+                </>
               ) : (
-                <p className="text-muted-foreground">학식 정보를 불러올 수 없습니다.</p>
+                <p className="text-sm text-muted-foreground text-center py-4">학식 정보 없음</p>
               )}
             </CardContent>
           </Card>
