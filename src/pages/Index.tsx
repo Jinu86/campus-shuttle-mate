@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bus, ChevronDown } from "lucide-react";
+import { Bus, Train } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Index = () => {
@@ -34,10 +34,17 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      {/* Header */}
+      <header className="bg-card border-b border-border sticky top-0 z-10">
+        <div className="max-w-md mx-auto px-5 py-4">
+          <h1 className="text-xl font-bold text-foreground">바로 셔틀</h1>
+        </div>
+      </header>
+
       <div className="max-w-md mx-auto px-5 py-6 space-y-4">
         {/* 학교에서 출발 카드 */}
         <Card className="shadow-soft border-border bg-card">
-          <CardContent className="p-5 flex items-center gap-3">
+          <CardContent className="p-5 flex items-center gap-2">
             <Bus className="w-8 h-8 text-primary flex-shrink-0" strokeWidth={2} />
             <div className="flex-1">
               <p className="text-base font-medium text-foreground mb-1">학교에서 출발</p>
@@ -48,7 +55,7 @@ const Index = () => {
 
         {/* 조치원역에서 출발 카드 */}
         <Card className="shadow-soft border-border bg-card">
-          <CardContent className="p-5 flex items-center gap-3">
+          <CardContent className="p-5 flex items-center gap-2">
             <Bus className="w-8 h-8 text-primary flex-shrink-0" strokeWidth={2} />
             <div className="flex-1">
               <p className="text-base font-medium text-foreground mb-1">조치원역에서 출발</p>
@@ -61,8 +68,8 @@ const Index = () => {
         <Card className="shadow-soft border-border bg-card">
           <CardContent className="p-5 space-y-4">
             <div className="flex items-center gap-2">
-              <Bus className="w-6 h-6 text-primary" strokeWidth={2} />
-              <h3 className="text-lg font-bold text-foreground">서울 시간 계산기</h3>
+              <Train className="w-6 h-6 text-primary" strokeWidth={2} />
+              <h3 className="text-lg font-bold text-foreground">셔틀 시간 계산기</h3>
             </div>
 
             <div className="flex items-center gap-2">
@@ -73,7 +80,7 @@ const Index = () => {
                 onClick={() => setTripType("board")}
                 className="text-sm"
               >
-                탑패
+                탈 때
               </Button>
               <Button
                 variant={tripType === "alight" ? "default" : "outline"}
