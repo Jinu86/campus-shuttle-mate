@@ -2,46 +2,27 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Train } from "lucide-react";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleKakaoLogin = async () => {
     setLoading(true);
-
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        toast.success("로그인 성공!");
-        navigate("/");
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-          },
-        });
-        if (error) throw error;
-        toast.success("회원가입 성공! 로그인해주세요.");
-        setIsLogin(true);
-      }
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'kakao',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        }
+      });
+      
+      if (error) throw error;
     } catch (error: any) {
-      toast.error(error.message || "인증 오류가 발생했습니다.");
-    } finally {
+      toast.error(error.message || "카카오 로그인에 실패했습니다.");
       setLoading(false);
     }
   };
@@ -62,42 +43,31 @@ const Auth = () => {
             </CardDescription>
           </div>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleAuth} className="space-y-4">
-            <div className="space-y-2">
-              <Input
-                type="email"
-                placeholder="이메일"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Input
-                type="password"
-                placeholder="비밀번호"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
-              {loading ? "처리중..." : isLogin ? "로그인" : "회원가입"}
-            </Button>
-          </form>
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              {isLogin ? "계정이 없으신가요? 회원가입" : "이미 계정이 있으신가요? 로그인"}
-            </button>
+        <CardContent className="space-y-4">
+          <div className="text-center space-y-2 py-4">
+            <p className="text-sm text-muted-foreground">
+              간편하게 3초만에 시작하세요
+            </p>
           </div>
+          <Button
+            onClick={handleKakaoLogin}
+            className="w-full h-12 text-base font-semibold bg-[#FEE500] hover:bg-[#FDD835] text-[#000000] shadow-medium"
+            disabled={loading}
+          >
+            {loading ? (
+              "카카오 연결중..."
+            ) : (
+              <div className="flex items-center justify-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 3C5.58172 3 2 5.85967 2 9.38462C2 11.6853 3.58333 13.6826 5.91667 14.7115L5.08333 17.6923C5.08333 17.6923 5.03333 17.9231 5.2 17.9231C5.31667 17.9231 9.01667 15.0288 9.01667 15.0288C9.34167 15.0577 9.66667 15.0769 10 15.0769C14.4183 15.0769 18 12.2173 18 8.69231C18 5.16731 14.4183 3 10 3Z" fill="currentColor"/>
+                </svg>
+                카카오로 3초 만에 시작하기
+              </div>
+            )}
+          </Button>
+          <p className="text-xs text-center text-muted-foreground">
+            로그인하면 서비스 이용약관 및 개인정보처리방침에 동의하게 됩니다
+          </p>
         </CardContent>
       </Card>
     </div>
