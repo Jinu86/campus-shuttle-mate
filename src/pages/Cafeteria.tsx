@@ -3,6 +3,7 @@ import BottomNav from "@/components/BottomNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Utensils } from "lucide-react";
@@ -67,7 +68,32 @@ const Cafeteria = () => {
     }
   };
 
-  const mealTypeOrder = { "아침": 1, "점심": 2, "저녁": 3 };
+  const breakfastMenu = menus.find(m => m.meal_type === "아침");
+  const lunchMenus = menus.filter(m => m.meal_type.startsWith("점심"));
+  const dinnerMenu = menus.find(m => m.meal_type === "저녁");
+
+  const renderMenuCard = (menu: any) => (
+    <Card className="shadow-soft hover:shadow-medium transition-smooth">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg font-bold flex items-center justify-between">
+          <span className="text-foreground">{menu.meal_type}</span>
+          <span className="text-xl font-extrabold text-accent">
+            {menu.price?.toLocaleString()}원
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ul className="space-y-2">
+          {menu.menu_items.map((item: string, idx: number) => (
+            <li key={idx} className="flex items-start gap-2 text-sm">
+              <span className="text-primary mt-0.5">•</span>
+              <span className="text-foreground">{item}</span>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -96,30 +122,54 @@ const Cafeteria = () => {
         </Card>
 
         <div className="space-y-4">
-          {menus
-            .sort((a, b) => mealTypeOrder[a.meal_type as keyof typeof mealTypeOrder] - mealTypeOrder[b.meal_type as keyof typeof mealTypeOrder])
-            .map((menu) => (
-            <Card key={menu.id} className="shadow-soft hover:shadow-medium transition-smooth">
+          {breakfastMenu && renderMenuCard(breakfastMenu)}
+
+          {lunchMenus.length > 0 && (
+            <Card className="shadow-soft">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-bold flex items-center justify-between">
-                  <span className="text-foreground">{menu.meal_type}</span>
-                  <span className="text-xl font-extrabold text-accent">
-                    {menu.price?.toLocaleString()}원
-                  </span>
-                </CardTitle>
+                <CardTitle className="text-lg font-bold text-foreground">점심</CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2">
-                  {menu.menu_items.map((item: string, idx: number) => (
-                    <li key={idx} className="flex items-start gap-2 text-sm">
-                      <span className="text-primary mt-0.5">•</span>
-                      <span className="text-foreground">{item}</span>
-                    </li>
-                  ))}
-                </ul>
+                <Tabs defaultValue="한식" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 mb-4">
+                    <TabsTrigger value="한식">한식</TabsTrigger>
+                    <TabsTrigger value="일품">일품</TabsTrigger>
+                    <TabsTrigger value="분식">분식</TabsTrigger>
+                  </TabsList>
+                  {["한식", "일품", "분식"].map((category) => {
+                    const menu = lunchMenus.find(m => m.meal_type === `점심-${category}`);
+                    return (
+                      <TabsContent key={category} value={category} className="mt-0">
+                        {menu ? (
+                          <>
+                            <div className="flex justify-end mb-3">
+                              <span className="text-xl font-extrabold text-accent">
+                                {menu.price?.toLocaleString()}원
+                              </span>
+                            </div>
+                            <ul className="space-y-2">
+                              {menu.menu_items.map((item: string, idx: number) => (
+                                <li key={idx} className="flex items-start gap-2 text-sm">
+                                  <span className="text-primary mt-0.5">•</span>
+                                  <span className="text-foreground">{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </>
+                        ) : (
+                          <p className="text-sm text-muted-foreground text-center py-4">
+                            메뉴 정보가 없습니다
+                          </p>
+                        )}
+                      </TabsContent>
+                    );
+                  })}
+                </Tabs>
               </CardContent>
             </Card>
-          ))}
+          )}
+
+          {dinnerMenu && renderMenuCard(dinnerMenu)}
         </div>
       </div>
       <BottomNav />
