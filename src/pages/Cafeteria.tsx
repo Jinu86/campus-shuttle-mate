@@ -70,20 +70,20 @@ const Cafeteria = () => {
   const mealTypeOrder = { "아침": 1, "점심": 2, "저녁": 3 };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 pb-24">
-      <div className="max-w-screen-lg mx-auto p-4 space-y-4">
-        <div className="pt-8 pb-4">
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Utensils className="w-8 h-8 text-accent" />
+    <div className="min-h-screen bg-background pb-24">
+      <div className="max-w-md mx-auto p-6 space-y-6">
+        <div className="pt-2">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Utensils className="w-6 h-6 text-primary" />
             학식
           </h1>
-          <p className="text-muted-foreground mt-2">오늘의 학식 메뉴</p>
+          <p className="text-sm text-muted-foreground mt-1">오늘의 학식 메뉴</p>
         </div>
 
-        <Card className="shadow-medium">
-          <CardContent className="p-4">
+        <Card className="shadow-soft">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
-              <Label htmlFor="menu-alarm" className="text-base">
+              <Label htmlFor="menu-alarm" className="text-sm font-medium">
                 ☀️ 매일 아침 메뉴 알림 받기
               </Label>
               <Switch
@@ -99,11 +99,11 @@ const Cafeteria = () => {
           {menus
             .sort((a, b) => mealTypeOrder[a.meal_type as keyof typeof mealTypeOrder] - mealTypeOrder[b.meal_type as keyof typeof mealTypeOrder])
             .map((menu) => (
-            <Card key={menu.id} className="shadow-soft hover:shadow-medium transition-all">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>{menu.meal_type}</span>
-                  <span className="text-lg text-primary font-bold">
+            <Card key={menu.id} className="shadow-soft hover:shadow-medium transition-smooth">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-bold flex items-center justify-between">
+                  <span className="text-foreground">{menu.meal_type}</span>
+                  <span className="text-xl font-extrabold text-accent">
                     {menu.price?.toLocaleString()}원
                   </span>
                 </CardTitle>
@@ -111,9 +111,9 @@ const Cafeteria = () => {
               <CardContent>
                 <ul className="space-y-2">
                   {menu.menu_items.map((item: string, idx: number) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <span className="text-primary mt-1">•</span>
-                      <span>{item}</span>
+                    <li key={idx} className="flex items-start gap-2 text-sm">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span className="text-foreground">{item}</span>
                     </li>
                   ))}
                 </ul>

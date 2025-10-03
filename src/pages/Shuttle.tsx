@@ -58,24 +58,24 @@ const Shuttle = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 pb-24">
-      <div className="max-w-screen-lg mx-auto p-4 space-y-4">
-        <div className="pt-8 pb-4">
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Bus className="w-8 h-8 text-primary" />
+    <div className="min-h-screen bg-background pb-24">
+      <div className="max-w-md mx-auto p-6 space-y-6">
+        <div className="pt-2">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Bus className="w-6 h-6 text-primary" />
             셔틀버스
           </h1>
-          <p className="text-muted-foreground mt-2">오늘의 셔틀 시간표</p>
+          <p className="text-sm text-muted-foreground mt-1">오늘의 셔틀 시간표</p>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-4">
           {shuttles.map((shuttle) => (
-            <Card key={shuttle.id} className="shadow-soft hover:shadow-medium transition-all">
-              <CardContent className="p-4">
+            <Card key={shuttle.id} className="shadow-soft hover:shadow-medium transition-smooth">
+              <CardContent className="p-5">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <p className="text-2xl font-bold text-primary">{shuttle.departure_time}</p>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-3xl font-extrabold text-foreground">{shuttle.departure_time}</p>
+                    <p className="text-sm text-muted-foreground mt-2">
                       {shuttle.destination} • {shuttle.duration_minutes}분 소요
                     </p>
                     {shuttle.notes && (
@@ -86,7 +86,7 @@ const Shuttle = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => openAlarmModal(shuttle)}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-1.5 ml-3"
                   >
                     <Bell className="w-4 h-4" />
                     알림

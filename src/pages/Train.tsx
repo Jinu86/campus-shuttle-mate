@@ -93,23 +93,23 @@ const Train = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 pb-24">
-      <div className="max-w-screen-lg mx-auto p-4 space-y-4">
-        <div className="pt-8 pb-4">
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <TrainIcon className="w-8 h-8 text-primary" />
+    <div className="min-h-screen bg-background pb-24">
+      <div className="max-w-md mx-auto p-6 space-y-6">
+        <div className="pt-2">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <TrainIcon className="w-6 h-6 text-primary" />
             기차 시간
           </h1>
-          <p className="text-muted-foreground mt-2">셔틀과 연계된 경로를 찾아보세요</p>
+          <p className="text-sm text-muted-foreground mt-1">셔틀과 연계된 경로를 찾아보세요</p>
         </div>
 
-        <Card className="shadow-medium">
-          <CardHeader>
-            <CardTitle>경로 탐색</CardTitle>
+        <Card className="shadow-soft">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-bold text-foreground">경로 탐색</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="dest">도착역</Label>
+              <Label htmlFor="dest" className="text-sm font-medium">도착역</Label>
               <Select value={destination} onValueChange={setDestination}>
                 <SelectTrigger id="dest">
                   <SelectValue placeholder="도착역을 선택하세요" />
@@ -121,7 +121,7 @@ const Train = () => {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="time">도착 시간</Label>
+              <Label htmlFor="time" className="text-sm font-medium">도착 시간</Label>
               <Input
                 id="time"
                 type="time"
@@ -137,12 +137,12 @@ const Train = () => {
 
         {routes.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-xl font-bold">탐색 결과</h2>
+            <h2 className="text-lg font-bold text-foreground">탐색 결과</h2>
             {routes.map((route, idx) => (
-              <Card key={idx} className="shadow-soft hover:shadow-medium transition-all">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span className="flex items-center gap-2">
+              <Card key={idx} className="shadow-soft hover:shadow-medium transition-smooth">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-bold flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-foreground">
                       <MapPin className="w-5 h-5 text-primary" />
                       {route.type}
                     </span>
@@ -153,27 +153,27 @@ const Train = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                  <div className="bg-secondary rounded-lg p-3 space-y-1.5">
                     <p className="font-semibold text-sm text-primary">셔틀버스</p>
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-sm text-foreground">
                       <span>출발: {route.shuttleInfo.departureTime}</span>
                       <span>도착: {route.shuttleInfo.arrivalTime}</span>
                     </div>
                   </div>
                   
                   {route.transferInfo && (
-                    <div className="bg-muted/50 rounded-lg p-3 space-y-2">
-                      <p className="font-semibold text-sm text-accent">환승: {route.transferInfo.type}</p>
-                      <div className="flex justify-between text-sm">
+                    <div className="bg-secondary rounded-lg p-3 space-y-1.5">
+                      <p className="font-semibold text-sm text-primary">환승: {route.transferInfo.type}</p>
+                      <div className="flex justify-between text-sm text-foreground">
                         <span>출발: {route.transferInfo.departureTime}</span>
                         <span>소요: {route.transferInfo.duration}분</span>
                       </div>
                     </div>
                   )}
                   
-                  <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                  <div className="bg-secondary rounded-lg p-3 space-y-1.5">
                     <p className="font-semibold text-sm text-foreground">기차: {route.trainInfo.type}</p>
-                    <div className="text-sm">
+                    <div className="text-sm text-foreground">
                       <span>출발: {route.trainInfo.departureTime}</span>
                     </div>
                   </div>
@@ -181,7 +181,6 @@ const Train = () => {
                   <Button 
                     onClick={() => registerRoute(route)} 
                     className="w-full"
-                    variant="outline"
                   >
                     이 경로로 등록하기
                   </Button>
