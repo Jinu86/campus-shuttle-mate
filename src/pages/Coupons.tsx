@@ -39,6 +39,14 @@ const Coupons = () => {
   const loadData = async () => {
     if (!user) return;
 
+    // 개발 모드인 경우 가짜 데이터 설정
+    const isDevMode = typeof window !== 'undefined' && localStorage.getItem('DEV_MODE') === 'true';
+    if (isDevMode) {
+      setCoupons([]);
+      setUserCoupons({ available_count: 3, total_earned: 5 });
+      return;
+    }
+
     try {
       const [couponsResult, userCouponsResult] = await Promise.all([
         supabase
