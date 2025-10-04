@@ -39,30 +39,30 @@ const Coupons = () => {
   const loadData = async () => {
     if (!user) return;
 
-    // 개발 모드인 경우 가짜 데이터 설정
+    // 개발 모드인 경우 user_coupons만 가짜 데이터 설정
     const isDevMode = typeof window !== 'undefined' && localStorage.getItem('DEV_MODE') === 'true';
-    if (isDevMode) {
-      setCoupons([]);
-      setUserCoupons({ available_count: 3, total_earned: 5 });
-      return;
-    }
 
     try {
-      const [couponsResult, userCouponsResult] = await Promise.all([
-        supabase
-          .from("coupons")
-          .select("*")
-          .eq("is_active", true)
-          .order("created_at", { ascending: false }),
-        supabase
+      const couponsResult = await supabase
+        .from("coupons")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+
+      if (couponsResult.data) setCoupons(couponsResult.data);
+
+      // 개발 모드에서는 user_coupons를 가짜 데이터로 설정
+      if (isDevMode) {
+        setUserCoupons({ available_count: 3, total_earned: 5 });
+      } else {
+        const userCouponsResult = await supabase
           .from("user_coupons")
           .select("*")
           .eq("user_id", user.id)
-          .maybeSingle(),
-      ]);
-
-      if (couponsResult.data) setCoupons(couponsResult.data);
-      if (userCouponsResult.data) setUserCoupons(userCouponsResult.data);
+          .maybeSingle();
+        
+        if (userCouponsResult.data) setUserCoupons(userCouponsResult.data);
+      }
     } catch (error) {
       console.error("데이터 로드 실패:", error);
       toast.error("데이터를 불러오는데 실패했습니다.");
