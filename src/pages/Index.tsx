@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Bus, Train } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { cn } from "@/lib/utils";
 
 const trainSchedules = {
   "mugunghwa-3410": { name: "무궁화 3410", arrivalTime: "14:30", departureFromSeoul: "12:45" },
@@ -364,35 +365,44 @@ const Index = () => {
         <Card className="shadow-soft border-border bg-card">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-foreground">셔틀 시간표</h3>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 bg-muted rounded-md p-1">
-                  <Button
-                    variant={shuttleDirection === "toStation" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setShuttleDirection("toStation")}
-                    className="text-xs h-7 px-2"
-                  >
-                    학교 출발
-                  </Button>
-                  <Button
-                    variant={shuttleDirection === "toSchool" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setShuttleDirection("toSchool")}
-                    className="text-xs h-7 px-2"
-                  >
-                    조치원역 출발
-                  </Button>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/shuttle")}
-                  className="text-xs"
+              <div className="flex items-center gap-3">
+                <h3 className="text-lg font-bold text-foreground">셔틀 시간표</h3>
+                <div 
+                  className="relative flex items-center bg-muted rounded-lg p-0.5 cursor-pointer h-8"
+                  onClick={() => setShuttleDirection(shuttleDirection === "toStation" ? "toSchool" : "toStation")}
                 >
-                  전체보기
-                </Button>
+                  {/* Sliding background */}
+                  <div 
+                    className={cn(
+                      "absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] bg-primary rounded-md transition-all duration-300 ease-in-out",
+                      shuttleDirection === "toStation" ? "left-0.5" : "left-[calc(50%+2px)]"
+                    )}
+                  />
+                  {/* Button labels */}
+                  <div className="relative z-10 flex w-full">
+                    <div className={cn(
+                      "flex-1 px-3 py-1 text-xs font-medium text-center transition-colors duration-300",
+                      shuttleDirection === "toStation" ? "text-primary-foreground" : "text-muted-foreground"
+                    )}>
+                      학교 출발
+                    </div>
+                    <div className={cn(
+                      "flex-1 px-3 py-1 text-xs font-medium text-center transition-colors duration-300",
+                      shuttleDirection === "toSchool" ? "text-primary-foreground" : "text-muted-foreground"
+                    )}>
+                      조치원역 출발
+                    </div>
+                  </div>
+                </div>
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/shuttle")}
+                className="text-xs"
+              >
+                전체보기
+              </Button>
             </div>
             
             {!isSemesterActive ? (
