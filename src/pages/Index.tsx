@@ -44,10 +44,13 @@ const Index = () => {
     if (tripType === "alight") {
       // 내릴때: 기차 도착 후 다음 셔틀 찾기
       const arrivalMinutes = parseInt(train.arrivalTime.split(":")[0]) * 60 + parseInt(train.arrivalTime.split(":")[1]);
-      const nextShuttle = shuttles.find(s => {
+      
+      // 학교행 셔틀 찾기
+      const schoolShuttles = shuttles.filter(s => s.destination === "학교");
+      const nextShuttle = schoolShuttles.find(s => {
         const shuttleTime = s.departure_time.split(":");
         const shuttleMinutes = parseInt(shuttleTime[0]) * 60 + parseInt(shuttleTime[1]);
-        return shuttleMinutes > arrivalMinutes && s.destination === "학교";
+        return shuttleMinutes > arrivalMinutes;
       });
       
       if (nextShuttle) {
@@ -59,6 +62,17 @@ const Index = () => {
           label: "조치원역에서 출발"
         };
       }
+      
+      // 막차 시간 확인
+      const lastShuttle = schoolShuttles[schoolShuttles.length - 1];
+      if (lastShuttle) {
+        const lastShuttleTime = lastShuttle.departure_time.split(":");
+        const lastShuttleMinutes = parseInt(lastShuttleTime[0]) * 60 + parseInt(lastShuttleTime[1]);
+        if (arrivalMinutes > lastShuttleMinutes) {
+          return { shuttleTime: "없음", waitTime: 0, label: "조치원역에서 출발" };
+        }
+      }
+      
       return { shuttleTime: "없음", waitTime: 0, label: "조치원역에서 출발" };
     } else {
       // 탈 때: 기차 타기 위해 교내 출발 셔틀 찾기
@@ -66,11 +80,16 @@ const Index = () => {
       // 기차 출발 1시간 전에 조치원역 도착해야 함
       const requiredArrivalMinutes = departureMinutes - 60;
       
-      const requiredShuttle = shuttles.find(s => {
+      // 조치원역행 셔틀 찾기 (역순으로 가장 늦은 시간 찾기)
+      const stationShuttles = shuttles
+        .filter(s => s.destination === "조치원역")
+        .reverse();
+      
+      const requiredShuttle = stationShuttles.find(s => {
         const shuttleTime = s.departure_time.split(":");
         const shuttleMinutes = parseInt(shuttleTime[0]) * 60 + parseInt(shuttleTime[1]);
         const arrivalMinutes = shuttleMinutes + s.duration_minutes;
-        return arrivalMinutes <= requiredArrivalMinutes && s.destination === "조치원역";
+        return arrivalMinutes <= requiredArrivalMinutes;
       });
       
       if (requiredShuttle) {
@@ -80,6 +99,19 @@ const Index = () => {
           label: "교내 셔틀 탑승 시간"
         };
       }
+      
+      // 막차 시간 확인
+      const firstShuttle = shuttles.find(s => s.destination === "조치원역");
+      if (firstShuttle) {
+        const firstShuttleTime = firstShuttle.departure_time.split(":");
+        const firstShuttleMinutes = parseInt(firstShuttleTime[0]) * 60 + parseInt(firstShuttleTime[1]);
+        const firstArrivalMinutes = firstShuttleMinutes + firstShuttle.duration_minutes;
+        
+        if (requiredArrivalMinutes < firstArrivalMinutes) {
+          return { shuttleTime: "없음", trainDeparture: train.departureFromSeoul, label: "교내 셔틀 탑승 시간" };
+        }
+      }
+      
       return { shuttleTime: "없음", trainDeparture: train.departureFromSeoul, label: "교내 셔틀 탑승 시간" };
     }
   };
@@ -152,13 +184,25 @@ const Index = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="mugunghwa-3410">
-                  {trainSchedules["mugunghwa-3410"].name} {trainSchedules["mugunghwa-3410"].arrivalTime} 조치원 도착
+                  {trainSchedules["mugunghwa-3410"].name}{" "}
+                  {tripType === "alight" 
+                    ? `${trainSchedules["mugunghwa-3410"].arrivalTime} 조치원 도착`
+                    : `${trainSchedules["mugunghwa-3410"].departureFromSeoul} 조치원 출발`
+                  }
                 </SelectItem>
                 <SelectItem value="ktx-101">
-                  {trainSchedules["ktx-101"].name} {trainSchedules["ktx-101"].arrivalTime} 조치원 도착
+                  {trainSchedules["ktx-101"].name}{" "}
+                  {tripType === "alight"
+                    ? `${trainSchedules["ktx-101"].arrivalTime} 조치원 도착`
+                    : `${trainSchedules["ktx-101"].departureFromSeoul} 조치원 출발`
+                  }
                 </SelectItem>
                 <SelectItem value="itx-203">
-                  {trainSchedules["itx-203"].name} {trainSchedules["itx-203"].arrivalTime} 조치원 도착
+                  {trainSchedules["itx-203"].name}{" "}
+                  {tripType === "alight"
+                    ? `${trainSchedules["itx-203"].arrivalTime} 조치원 도착`
+                    : `${trainSchedules["itx-203"].departureFromSeoul} 조치원 출발`
+                  }
                 </SelectItem>
               </SelectContent>
             </Select>
