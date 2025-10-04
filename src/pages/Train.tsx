@@ -1,43 +1,102 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Clock, MapPin } from "lucide-react";
+import { Clock, MapPin, Calendar as CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 const Train = () => {
   const navigate = useNavigate();
-  const TEMP_USER_ID = "00000000-0000-0000-0000-000000000000";
-  const [destination, setDestination] = useState<string>("");
-  const [arrivalTime, setArrivalTime] = useState<string>("");
+  const { user } = useAuth();
+  const [trainDate, setTrainDate] = useState<Date>();
+  const [trainDepartureTime, setTrainDepartureTime] = useState<string>("");
   const [routes, setRoutes] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
 
+  useEffect(() => {
+    if (!user) {
+      toast.error("로그인이 필요합니다.");
+      navigate("/auth");
+    }
+  }, [user, navigate]);
+
   const searchRoutes = async () => {
-    if (!destination || !arrivalTime) {
-      toast.error("도착역과 도착 시간을 모두 입력해주세요.");
+    if (!trainDate || !trainDepartureTime) {
+      toast.error("날짜와 기차 출발 시간을 모두 입력해주세요.");
       return;
     }
 
     setSearching(true);
     try {
+      // Calculate when user needs to arrive at station (10 minutes before train)
+      const [hours, minutes] = trainDepartureTime.split(":").map(Number);
+      const trainTime = new Date();
+      trainTime.setHours(hours, minutes, 0);
+      
+      const requiredArrivalTime = new Date(trainTime.getTime() - 10 * 60000);
+      const requiredArrivalTimeStr = `${String(requiredArrivalTime.getHours()).padStart(2, '0')}:${String(requiredArrivalTime.getMinutes()).padStart(2, '0')}`;
+
+      // Fetch shuttle schedules for the selected date
+      const dayOfWeek = trainDate.getDay();
+      let dayType = "월~목";
+      if (dayOfWeek === 5) dayType = "금요일";
+      else if (dayOfWeek === 0) dayType = "일요일";
+      else if (dayOfWeek === 6) {
+        toast.error("토요일에는 셔틀이 운행하지 않습니다.");
+        setSearching(false);
+        return;
+      }
+
+      const { data: shuttles, error } = await supabase
+        .from("shuttle_schedules")
+        .select("*")
+        .eq("day_type", dayType)
+        .eq("destination", "조치원역")
+        .order("departure_time");
+
+      if (error) throw error;
+
+      // Find suitable shuttle
+      const suitableShuttle = shuttles?.find(shuttle => {
+        const [shuttleArrHours, shuttleArrMinutes] = shuttle.departure_time.split(":").map(Number);
+        const shuttleArrivalTime = new Date();
+        shuttleArrivalTime.setHours(shuttleArrHours, shuttleArrMinutes + shuttle.duration_minutes, 0);
+        
+        return shuttleArrivalTime <= requiredArrivalTime;
+      });
+
+      if (!suitableShuttle) {
+        toast.error("해당 시간에 맞는 셔틀을 찾을 수 없습니다.");
+        setSearching(false);
+        return;
+      }
+
+      const shuttleArrivalTime = new Date();
+      const [depH, depM] = suitableShuttle.departure_time.split(":").map(Number);
+      shuttleArrivalTime.setHours(depH, depM + suitableShuttle.duration_minutes, 0);
+
       const mockRoutes = [
         {
-          type: "직행",
-          totalTime: 35,
+          totalTime: Math.round((trainTime.getTime() - new Date().setHours(depH, depM, 0)) / 60000),
           shuttleInfo: {
-            departureTime: "14:00",
-            arrivalTime: "14:20",
+            id: suitableShuttle.id,
+            departureTime: suitableShuttle.departure_time,
+            arrivalTime: `${String(shuttleArrivalTime.getHours()).padStart(2, '0')}:${String(shuttleArrivalTime.getMinutes()).padStart(2, '0')}`,
+            duration: suitableShuttle.duration_minutes,
           },
-          transferInfo: null,
           trainInfo: {
-            type: "ITX",
-            departureTime: "14:30",
+            departureTime: trainDepartureTime,
+            requiredArrival: requiredArrivalTimeStr,
           },
         },
       ];
@@ -51,17 +110,37 @@ const Train = () => {
   };
 
   const registerRoute = async (route: any) => {
+    if (!user || !trainDate) return;
+
     try {
-      const { error } = await supabase.from("trips").insert({
-        user_id: TEMP_USER_ID,
-        destination_station: destination,
-        arrival_time: arrivalTime,
-        route_type: route.type,
+      // Insert trip
+      const { data: tripData, error: tripError } = await supabase
+        .from("trips")
+        .insert({
+          user_id: user.id,
+          destination_station: "조치원역",
+          arrival_time: route.trainInfo.requiredArrival,
+          train_date: format(trainDate, "yyyy-MM-dd"),
+          train_departure_time: trainDepartureTime,
+          route_type: "직행",
+        })
+        .select()
+        .single();
+
+      if (tripError) throw tripError;
+
+      // Create alarm for shuttle (5 minutes before departure)
+      const { error: alarmError } = await supabase.from("alarms").insert({
+        user_id: user.id,
+        alarm_type: "shuttle",
+        target_id: tripData.id,
+        minutes_before: 5,
+        enabled: true,
       });
 
-      if (error) throw error;
+      if (alarmError) throw alarmError;
 
-      toast.success("기차 시간이 등록되었습니다! 홈 화면에서 확인하세요.");
+      toast.success("기차 시간과 셔틀 알람이 등록되었습니다!");
       navigate("/");
     } catch (error: any) {
       toast.error(error.message || "등록에 실패했습니다.");
@@ -81,27 +160,49 @@ const Train = () => {
 
         <Card className="shadow-soft">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-bold text-foreground">경로 탐색</CardTitle>
+            <CardTitle className="text-lg font-bold text-foreground">기차 정보</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="dest" className="text-sm font-medium">도착역</Label>
-              <Select value={destination} onValueChange={setDestination}>
-                <SelectTrigger id="dest">
-                  <SelectValue placeholder="도착역을 선택하세요" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="조치원역">조치원역</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label className="text-sm font-medium">출발역</Label>
+              <div className="px-3 py-2 bg-secondary rounded-md text-sm text-foreground">
+                조치원역 (고정)
+              </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="time" className="text-sm font-medium">도착 시간</Label>
+              <Label className="text-sm font-medium">날짜</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !trainDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {trainDate ? format(trainDate, "PPP", { locale: ko }) : "날짜를 선택하세요"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={trainDate}
+                    onSelect={setTrainDate}
+                    initialFocus
+                    locale={ko}
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="time" className="text-sm font-medium">기차 출발 시간</Label>
               <Input
                 id="time"
                 type="time"
-                value={arrivalTime}
-                onChange={(e) => setArrivalTime(e.target.value)}
+                value={trainDepartureTime}
+                onChange={(e) => setTrainDepartureTime(e.target.value)}
               />
             </div>
             <Button onClick={searchRoutes} className="w-full" disabled={searching}>
@@ -112,45 +213,48 @@ const Train = () => {
 
         {routes.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold text-foreground">탐색 결과</h2>
+            <h2 className="text-lg font-bold text-foreground">추천 경로</h2>
             {routes.map((route, idx) => (
               <Card key={idx} className="shadow-soft hover:shadow-medium transition-smooth">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-bold flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-foreground">
-                      <MapPin className="w-5 h-5 text-primary" />
-                      {route.type}
-                    </span>
-                    <span className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      총 {route.totalTime}분
-                    </span>
+                  <CardTitle className="text-base font-bold flex items-center gap-2 text-foreground">
+                    <MapPin className="w-5 h-5 text-primary" />
+                    학교 → 조치원역 경로
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="bg-secondary rounded-lg p-3 space-y-1.5">
-                    <p className="font-semibold text-sm text-primary">셔틀버스</p>
+                    <p className="font-semibold text-sm text-primary">셔틀버스 (학교 → 조치원역)</p>
                     <div className="flex justify-between text-sm text-foreground">
                       <span>출발: {route.shuttleInfo.departureTime}</span>
                       <span>도착: {route.shuttleInfo.arrivalTime}</span>
                     </div>
+                    <div className="text-xs text-muted-foreground">
+                      소요시간: {route.shuttleInfo.duration}분
+                    </div>
                   </div>
                   
-                  {route.transferInfo && (
-                    <div className="bg-secondary rounded-lg p-3 space-y-1.5">
-                      <p className="font-semibold text-sm text-primary">환승: {route.transferInfo.type}</p>
-                      <div className="flex justify-between text-sm text-foreground">
-                        <span>출발: {route.transferInfo.departureTime}</span>
-                        <span>소요: {route.transferInfo.duration}분</span>
-                      </div>
-                    </div>
-                  )}
+                  <div className="flex items-center justify-center py-2">
+                    <div className="h-px bg-border flex-1" />
+                    <span className="px-3 text-xs text-muted-foreground">환승 대기</span>
+                    <div className="h-px bg-border flex-1" />
+                  </div>
                   
                   <div className="bg-secondary rounded-lg p-3 space-y-1.5">
-                    <p className="font-semibold text-sm text-foreground">기차: {route.trainInfo.type}</p>
+                    <p className="font-semibold text-sm text-primary">기차 (조치원역 출발)</p>
                     <div className="text-sm text-foreground">
-                      <span>출발: {route.trainInfo.departureTime}</span>
+                      <div>출발 시간: {route.trainInfo.departureTime}</div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        * {route.trainInfo.requiredArrival}까지 조치원역 도착 필요
+                      </div>
                     </div>
+                  </div>
+
+                  <div className="bg-primary/10 rounded-lg p-3 text-sm">
+                    <p className="font-semibold text-primary mb-1">🔔 알람 설정</p>
+                    <p className="text-xs text-muted-foreground">
+                      셔틀 출발 5분 전 ({route.shuttleInfo.departureTime})에 알람이 울립니다
+                    </p>
                   </div>
                   
                   <Button 

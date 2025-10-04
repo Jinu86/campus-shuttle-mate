@@ -161,6 +161,8 @@ export type Database = {
           destination_station: string
           id: string
           route_type: string | null
+          train_date: string | null
+          train_departure_time: string | null
           user_id: string
         }
         Insert: {
@@ -169,6 +171,8 @@ export type Database = {
           destination_station: string
           id?: string
           route_type?: string | null
+          train_date?: string | null
+          train_departure_time?: string | null
           user_id: string
         }
         Update: {
@@ -177,6 +181,8 @@ export type Database = {
           destination_station?: string
           id?: string
           route_type?: string | null
+          train_date?: string | null
+          train_departure_time?: string | null
           user_id?: string
         }
         Relationships: [
