@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Bell } from "lucide-react";
+import { Bell, ShieldCheck } from "lucide-react";
 
 const My = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const My = () => {
   const [trip, setTrip] = useState<any>(null);
   const [alarms, setAlarms] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>(null);
+  const [adminCode, setAdminCode] = useState("");
 
   useEffect(() => {
     loadUserData();
@@ -58,6 +60,17 @@ const My = () => {
     } catch (error: any) {
       toast.error(error.message || "삭제에 실패했습니다.");
     }
+  };
+
+  const handleAdminVerification = async () => {
+    if (!adminCode.trim()) {
+      toast.error("관리자 코드를 입력해주세요.");
+      return;
+    }
+    
+    // TODO: 서버에서 관리자 코드 검증 로직 추가 예정
+    toast.info("관리자 인증 기능은 준비중입니다.");
+    setAdminCode("");
   };
 
 
@@ -155,6 +168,34 @@ const My = () => {
                 </p>
               )
             )}
+          </CardContent>
+        </Card>
+
+        {/* 관리자 인증 */}
+        <Card className="shadow-soft border-muted">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+              <ShieldCheck className="w-4 h-4" />
+              관리자 인증
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              <Input
+                type="password"
+                placeholder="관리자 코드 입력"
+                value={adminCode}
+                onChange={(e) => setAdminCode(e.target.value)}
+                className="text-sm"
+              />
+              <Button 
+                onClick={handleAdminVerification}
+                size="sm"
+                variant="outline"
+              >
+                인증
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
