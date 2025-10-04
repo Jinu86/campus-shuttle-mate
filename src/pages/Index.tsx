@@ -385,7 +385,7 @@ const Index = () => {
                               </p>
                             </div>
                           ) : (
-                            <div className="grid grid-cols-1 gap-3 max-h-[300px] overflow-y-auto">
+                            <div className="grid grid-cols-1 gap-3 max-h-[120px] overflow-y-auto scrollbar-hide">
                               {dayShuttles.map((shuttle) => (
                                 <div 
                                   key={shuttle.id}
