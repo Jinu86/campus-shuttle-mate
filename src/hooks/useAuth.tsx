@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-// 개발 모드용 가짜 유저 생성
+// 개발 모드용 가짜 유저 생성 (유효한 UUID 형식 사용)
 const createDevUser = (): User => ({
-  id: 'dev-user-test-id',
+  id: '00000000-0000-0000-0000-000000000000',
   email: 'test@dev.com',
   app_metadata: {},
   user_metadata: {},

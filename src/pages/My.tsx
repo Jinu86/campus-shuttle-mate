@@ -46,6 +46,18 @@ const My = () => {
   const loadUserData = async () => {
     if (!user) return;
 
+    // 개발 모드인 경우 가짜 데이터 설정
+    const isDevMode = typeof window !== 'undefined' && localStorage.getItem('DEV_MODE') === 'true';
+    if (isDevMode) {
+      setTrip(null);
+      setAlarms([]);
+      setSettings({ menu_alarm_enabled: false });
+      setUserCoupons({ available_count: 3, total_earned: 5 });
+      setSelectedCoupons([]);
+      setReferralCode('DEV123');
+      return;
+    }
+
     try {
       const [tripResult, alarmsResult, settingsResult, userCouponsResult, selectedCouponsResult, profileResult] = await Promise.all([
         supabase.from("trips").select("*").eq("user_id", user.id).maybeSingle(),
