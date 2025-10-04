@@ -103,6 +103,15 @@ const Coupons = () => {
   const confirmSelectCoupon = async () => {
     if (!user || !selectedCoupon) return;
 
+    // 개발 모드 체크
+    const isDevMode = typeof window !== 'undefined' && localStorage.getItem('DEV_MODE') === 'true';
+    
+    if (isDevMode) {
+      toast.error("개발 모드에서는 쿠폰 발급이 불가능합니다. 실제 계정으로 로그인해주세요.");
+      setShowConfirmDialog(false);
+      return;
+    }
+
     try {
       // 트랜잭션처럼 처리하기 위해 순차적으로 실행
       // 1. 쿠폰 선택 기록
