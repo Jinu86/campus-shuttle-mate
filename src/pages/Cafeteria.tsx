@@ -71,29 +71,6 @@ const Cafeteria = () => {
   const lunchMenus = menus.filter(m => m.meal_type.startsWith("점심"));
   const dinnerMenu = menus.find(m => m.meal_type === "저녁");
 
-  const renderMenuCard = (menu: any) => (
-    <Card className="shadow-soft hover:shadow-medium transition-smooth">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-bold flex items-center justify-between">
-          <span className="text-foreground">{menu.meal_type}</span>
-          <span className="text-xl font-extrabold text-accent">
-            {menu.price?.toLocaleString()}원
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ul className="space-y-2">
-          {menu.menu_items.map((item: string, idx: number) => (
-            <li key={idx} className="flex items-start gap-2 text-sm">
-              <span className="text-primary mt-0.5">•</span>
-              <span className="text-foreground">{item}</span>
-            </li>
-          ))}
-        </ul>
-      </CardContent>
-    </Card>
-  );
-
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
@@ -120,15 +97,42 @@ const Cafeteria = () => {
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
-          {breakfastMenu && renderMenuCard(breakfastMenu)}
+        <Card className="shadow-soft">
+          <CardContent className="p-5">
+            <Tabs defaultValue="조식" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="조식">조식</TabsTrigger>
+                <TabsTrigger value="중식">중식</TabsTrigger>
+                <TabsTrigger value="석식">석식</TabsTrigger>
+              </TabsList>
 
-          {lunchMenus.length > 0 && (
-            <Card className="shadow-soft">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-bold text-foreground">점심</CardTitle>
-              </CardHeader>
-              <CardContent>
+              {/* 조식 탭 */}
+              <TabsContent value="조식" className="mt-4 space-y-4">
+                {breakfastMenu ? (
+                  <>
+                    <div className="flex justify-end">
+                      <span className="text-xl font-extrabold text-accent">
+                        {breakfastMenu.price?.toLocaleString()}원
+                      </span>
+                    </div>
+                    <ul className="space-y-2">
+                      {breakfastMenu.menu_items.map((item: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-2 text-sm">
+                          <span className="text-primary mt-0.5">•</span>
+                          <span className="text-foreground">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    등록된 메뉴가 없어요!
+                  </p>
+                )}
+              </TabsContent>
+
+              {/* 중식 탭 */}
+              <TabsContent value="중식" className="mt-4">
                 <Tabs defaultValue="한식" className="w-full">
                   <TabsList className="grid w-full grid-cols-3 mb-4">
                     <TabsTrigger value="한식">한식</TabsTrigger>
@@ -156,20 +160,43 @@ const Cafeteria = () => {
                             </ul>
                           </>
                         ) : (
-                          <p className="text-sm text-muted-foreground text-center py-4">
-                            메뉴 정보가 없습니다
+                          <p className="text-sm text-muted-foreground text-center py-8">
+                            등록된 메뉴가 없어요!
                           </p>
                         )}
                       </TabsContent>
                     );
                   })}
                 </Tabs>
-              </CardContent>
-            </Card>
-          )}
+              </TabsContent>
 
-          {dinnerMenu && renderMenuCard(dinnerMenu)}
-        </div>
+              {/* 석식 탭 */}
+              <TabsContent value="석식" className="mt-4 space-y-4">
+                {dinnerMenu ? (
+                  <>
+                    <div className="flex justify-end">
+                      <span className="text-xl font-extrabold text-accent">
+                        {dinnerMenu.price?.toLocaleString()}원
+                      </span>
+                    </div>
+                    <ul className="space-y-2">
+                      {dinnerMenu.menu_items.map((item: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-2 text-sm">
+                          <span className="text-primary mt-0.5">•</span>
+                          <span className="text-foreground">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    등록된 메뉴가 없어요!
+                  </p>
+                )}
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
       </div>
       <BottomNav />
     </div>

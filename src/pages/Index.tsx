@@ -168,7 +168,7 @@ const Index = () => {
           const currentMinutes = now.getHours() * 60 + now.getMinutes();
           const dbDayType = getDayTypeForDB(currentDayName);
           
-          // 토요일이면 "--:--" 표시
+          // 토요일이거나 dbDayType이 없으면 "--:--" 표시
           if (currentDayName === "토요일" || !dbDayType) {
             return (
               <Card className="shadow-soft border-border bg-card">
@@ -199,36 +199,34 @@ const Index = () => {
             return shuttleMinutes > currentMinutes;
           });
 
-          if (nextShuttle) {
-            return (
-              <Card className="shadow-soft border-border bg-card">
-                <CardContent className="p-5 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Bus className="w-6 h-6 text-primary flex-shrink-0" strokeWidth={2} />
-                    <p className="text-base font-medium text-foreground">다음 셔틀</p>
+          // 다음 셔틀이 있으면 표시, 없으면 "--:--" 표시
+          return (
+            <Card className="shadow-soft border-border bg-card">
+              <CardContent className="p-5 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Bus className="w-6 h-6 text-primary flex-shrink-0" strokeWidth={2} />
+                  <p className="text-base font-medium text-foreground">다음 셔틀</p>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">학교앞 → 조치원역</p>
+                    <p className="text-4xl font-black text-foreground">
+                      {nextShuttle ? nextShuttle.departure_time.substring(0, 5) : "--:--"}
+                    </p>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">학교앞 → 조치원역</p>
-                      <p className="text-4xl font-black text-foreground">
-                        {nextShuttle.departure_time.substring(0, 5)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">도착</p>
-                      <p className="text-2xl font-bold text-foreground">
-                        {nextShuttle.arrival_time?.substring(0, 5) || "-"}
-                      </p>
-                    </div>
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">도착</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {nextShuttle ? (nextShuttle.arrival_time?.substring(0, 5) || "-") : "--:--"}
+                    </p>
                   </div>
-                  {nextShuttle.notes && (
-                    <p className="text-xs text-muted-foreground">{nextShuttle.notes}</p>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          }
-          return null;
+                </div>
+                {nextShuttle?.notes && (
+                  <p className="text-xs text-muted-foreground">{nextShuttle.notes}</p>
+                )}
+              </CardContent>
+            </Card>
+          );
         })()}
 
         {/* 서울 시간 계산기 카드 */}
@@ -390,7 +388,7 @@ const Index = () => {
                       <CarouselItem key={dayName}>
                         <div className="space-y-3">
                           <p className="text-center text-sm font-bold text-primary">
-                            {dayName} {dayName === currentDayName && "(오늘)"}
+                            {dayName}
                           </p>
                           {dayShuttles.length === 0 ? (
                             <div className="text-center py-8">
