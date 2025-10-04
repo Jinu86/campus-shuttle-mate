@@ -82,7 +82,19 @@ const Index = () => {
 
   const getCalculatedTime = () => {
     const train = trainSchedules[selectedTrain as keyof typeof trainSchedules];
-    const dbDayType = currentDayName === "토요일" ? "월~목" : getDayTypeForDB(currentDayName);
+    const dbDayType = getDayTypeForDB(currentDayName);
+    
+    // 토요일이거나 운영하지 않는 날인 경우
+    if (!dbDayType) {
+      return { 
+        shuttleTime: "--:--", 
+        arrivalTime: "--:--", 
+        waitTime: 0, 
+        label: tripType === "alight" ? "조치원역에서 출발" : "학교앞 셔틀 탑승 시간",
+        trainDeparture: tripType === "board" ? train.departureFromSeoul : undefined
+      };
+    }
+    
     const shuttles = allShuttles.filter(s => s.day_type === dbDayType);
     
     if (tripType === "alight") {
