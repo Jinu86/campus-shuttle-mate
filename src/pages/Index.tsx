@@ -349,7 +349,7 @@ const Index = () => {
 
         {/* 셔틀 시간표 */}
         <Card className="shadow-soft border-border bg-card">
-          <CardContent className="p-5 space-y-4">
+          <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-foreground">셔틀 시간표</h3>
               <Button
