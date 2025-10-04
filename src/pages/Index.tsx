@@ -427,8 +427,8 @@ const Index = () => {
                     );
                   })}
                 </CarouselContent>
-                <CarouselPrevious className="left-[15%] top-[18px] h-6 w-6" />
-                <CarouselNext className="right-[15%] top-[18px] h-6 w-6" />
+                <CarouselPrevious className="left-[15%] top-[14px] h-6 w-6" />
+                <CarouselNext className="right-[15%] top-[14px] h-6 w-6" />
               </Carousel>
             )}
           </CardContent>
