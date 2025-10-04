@@ -19,16 +19,26 @@ const Train = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [trainDate, setTrainDate] = useState<Date>();
-  const [trainDepartureTime, setTrainDepartureTime] = useState<string>("");
+  const [selectedTrain, setSelectedTrain] = useState<string>("");
   const [routes, setRoutes] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
+  
+  // 조치원역 기차 시간표 (예시 데이터)
+  const trainSchedule = [
+    "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00",
+    "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00",
+    "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00",
+    "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00"
+  ];
 
 
-  const searchRoutes = async () => {
-    if (!trainDate || !trainDepartureTime) {
-      toast.error("날짜와 기차 출발 시간을 모두 입력해주세요.");
+  const searchRoutes = async (trainDepartureTime: string) => {
+    if (!trainDate) {
+      toast.error("날짜를 선택해주세요.");
       return;
     }
+    
+    setSelectedTrain(trainDepartureTime);
 
     setSearching(true);
     try {
@@ -121,7 +131,7 @@ const Train = () => {
           destination_station: "조치원역",
           arrival_time: route.trainInfo.requiredArrival,
           train_date: format(trainDate, "yyyy-MM-dd"),
-          train_departure_time: trainDepartureTime,
+          train_departure_time: selectedTrain,
           route_type: "직행",
         })
         .select()
@@ -160,15 +170,9 @@ const Train = () => {
 
         <Card className="shadow-soft">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-bold text-foreground">기차 정보</CardTitle>
+            <CardTitle className="text-lg font-bold text-foreground">조치원역 기차 정보</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">출발역</Label>
-              <div className="px-3 py-2 bg-secondary rounded-md text-sm text-foreground">
-                조치원역 (고정)
-              </div>
-            </div>
             <div className="space-y-2">
               <Label className="text-sm font-medium">날짜</Label>
               <Popover>
@@ -196,20 +200,28 @@ const Train = () => {
                 </PopoverContent>
               </Popover>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="time" className="text-sm font-medium">기차 출발 시간</Label>
-              <Input
-                id="time"
-                type="time"
-                value={trainDepartureTime}
-                onChange={(e) => setTrainDepartureTime(e.target.value)}
-              />
-            </div>
-            <Button onClick={searchRoutes} className="w-full" disabled={searching}>
-              {searching ? "검색중..." : "경로 탐색"}
-            </Button>
           </CardContent>
         </Card>
+
+        {trainDate && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-bold text-foreground">기차 시간 선택</h2>
+            <div className="grid grid-cols-3 gap-2">
+              {trainSchedule.map((time) => (
+                <Button
+                  key={time}
+                  variant={selectedTrain === time ? "default" : "outline"}
+                  className="h-auto py-3"
+                  onClick={() => searchRoutes(time)}
+                  disabled={searching}
+                >
+                  <Clock className="w-4 h-4 mr-1" />
+                  {time}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {routes.length > 0 && (
           <div className="space-y-4">
