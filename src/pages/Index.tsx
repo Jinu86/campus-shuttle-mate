@@ -374,10 +374,14 @@ const Index = () => {
                     const dayShuttles = dbDayType ? allShuttles.filter(s => s.day_type === dbDayType) : [];
                     return (
                       <CarouselItem key={dayName}>
-                        <div className="space-y-3">
-                          <p className="text-center text-sm font-bold text-primary">
-                            {dayName}
-                          </p>
+                         <div className="space-y-3">
+                          <div className="flex items-center justify-center gap-4">
+                            <div className="w-8" />
+                            <p className="text-sm font-bold text-primary">
+                              {dayName}
+                            </p>
+                            <div className="w-8" />
+                          </div>
                           {dayShuttles.length === 0 ? (
                             <div className="text-center py-8">
                               <p className="text-muted-foreground">
@@ -423,8 +427,8 @@ const Index = () => {
                     );
                   })}
                 </CarouselContent>
-                <CarouselPrevious className="left-2" />
-                <CarouselNext className="right-2" />
+                <CarouselPrevious className="left-1/4 top-[18px] h-8 w-8" />
+                <CarouselNext className="right-1/4 top-[18px] h-8 w-8" />
               </Carousel>
             )}
           </CardContent>
