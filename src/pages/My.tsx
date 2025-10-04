@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Bell, ShieldCheck, Gift, Share2, Copy } from "lucide-react";
+import { Bell, ShieldCheck, Gift, Share2, Copy, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const My = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const [trip, setTrip] = useState<any>(null);
   const [alarms, setAlarms] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>(null);
@@ -130,6 +130,16 @@ const My = () => {
 
   const handleLogin = () => {
     navigate("/auth");
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast.success("로그아웃되었습니다.");
+      navigate("/");
+    } catch (error: any) {
+      toast.error(error.message || "로그아웃에 실패했습니다.");
+    }
   };
 
   if (loading) {
@@ -363,6 +373,20 @@ const My = () => {
                     인증
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* 로그아웃 */}
+            <Card className="shadow-soft border-destructive/20">
+              <CardContent className="pt-6">
+                <Button 
+                  onClick={handleLogout}
+                  variant="destructive"
+                  className="w-full"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  로그아웃
+                </Button>
               </CardContent>
             </Card>
           </>
