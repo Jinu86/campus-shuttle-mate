@@ -369,9 +369,9 @@ const Index = () => {
                 <h3 className="text-lg font-bold text-foreground">셔틀 시간표</h3>
                 <div className="inline-flex items-center gap-2">
                   <Button
-                    variant="default"
+                    variant="secondary"
                     size="icon"
-                    className="h-8 w-8 rounded-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 shrink-0"
+                    className="h-8 w-8 rounded-full shrink-0 shadow-sm"
                     onClick={() => setShuttleDirection(shuttleDirection === "toStation" ? "toSchool" : "toStation")}
                   >
                     <ArrowLeftRight className="h-4 w-4" />
