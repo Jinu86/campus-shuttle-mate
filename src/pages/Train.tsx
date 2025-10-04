@@ -19,31 +19,48 @@ const Train = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [trainDate, setTrainDate] = useState<Date>();
-  const [selectedTrain, setSelectedTrain] = useState<string>("");
+  const [selectedTrain, setSelectedTrain] = useState<any>(null);
   const [routes, setRoutes] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
   
   // 조치원역 기차 시간표 (예시 데이터)
   const trainSchedule = [
-    "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00",
-    "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00",
-    "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00",
-    "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00"
+    { type: "ITX-새마을", time: "06:30", destination: "용산", trainNumber: "ITX-새마을 1001" },
+    { type: "무궁화호", time: "07:15", destination: "서울", trainNumber: "무궁화 1301" },
+    { type: "ITX-마음", time: "08:00", destination: "용산", trainNumber: "ITX-마음 1106" },
+    { type: "무궁화호", time: "08:45", destination: "청량리", trainNumber: "무궁화 1303" },
+    { type: "ITX-새마을", time: "09:30", destination: "용산", trainNumber: "ITX-새마을 1003" },
+    { type: "무궁화호", time: "10:15", destination: "서울", trainNumber: "무궁화 1305" },
+    { type: "ITX-마음", time: "11:00", destination: "용산", trainNumber: "ITX-마음 1108" },
+    { type: "무궁화호", time: "11:45", destination: "청량리", trainNumber: "무궁화 1307" },
+    { type: "ITX-새마을", time: "12:30", destination: "용산", trainNumber: "ITX-새마을 1005" },
+    { type: "무궁화호", time: "13:15", destination: "서울", trainNumber: "무궁화 1309" },
+    { type: "ITX-마음", time: "14:00", destination: "용산", trainNumber: "ITX-마음 1110" },
+    { type: "무궁화호", time: "14:45", destination: "청량리", trainNumber: "무궁화 1311" },
+    { type: "ITX-새마을", time: "15:30", destination: "용산", trainNumber: "ITX-새마을 1007" },
+    { type: "무궁화호", time: "16:15", destination: "서울", trainNumber: "무궁화 1313" },
+    { type: "ITX-마음", time: "17:00", destination: "용산", trainNumber: "ITX-마음 1112" },
+    { type: "무궁화호", time: "17:45", destination: "청량리", trainNumber: "무궁화 1315" },
+    { type: "ITX-새마을", time: "18:30", destination: "용산", trainNumber: "ITX-새마을 1009" },
+    { type: "무궁화호", time: "19:15", destination: "서울", trainNumber: "무궁화 1317" },
+    { type: "ITX-마음", time: "20:00", destination: "용산", trainNumber: "ITX-마음 1114" },
+    { type: "무궁화호", time: "20:45", destination: "청량리", trainNumber: "무궁화 1319" },
+    { type: "ITX-새마을", time: "21:30", destination: "용산", trainNumber: "ITX-새마을 1011" },
   ];
 
 
-  const searchRoutes = async (trainDepartureTime: string) => {
+  const searchRoutes = async (train: any) => {
     if (!trainDate) {
       toast.error("날짜를 선택해주세요.");
       return;
     }
     
-    setSelectedTrain(trainDepartureTime);
+    setSelectedTrain(train);
 
     setSearching(true);
     try {
       // Calculate when user needs to arrive at station (10 minutes before train)
-      const [hours, minutes] = trainDepartureTime.split(":").map(Number);
+      const [hours, minutes] = train.time.split(":").map(Number);
       const trainTime = new Date();
       trainTime.setHours(hours, minutes, 0);
       
@@ -99,7 +116,8 @@ const Train = () => {
             duration: suitableShuttle.duration_minutes,
           },
           trainInfo: {
-            departureTime: trainDepartureTime,
+            ...train,
+            departureTime: train.time,
             requiredArrival: requiredArrivalTimeStr,
           },
         },
@@ -131,7 +149,7 @@ const Train = () => {
           destination_station: "조치원역",
           arrival_time: route.trainInfo.requiredArrival,
           train_date: format(trainDate, "yyyy-MM-dd"),
-          train_departure_time: selectedTrain,
+          train_departure_time: selectedTrain?.time,
           route_type: "직행",
         })
         .select()
@@ -204,22 +222,39 @@ const Train = () => {
         </Card>
 
         {trainDate && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <h2 className="text-lg font-bold text-foreground">기차 시간 선택</h2>
-            <div className="grid grid-cols-3 gap-2">
-              {trainSchedule.map((time) => (
-                <Button
-                  key={time}
-                  variant={selectedTrain === time ? "default" : "outline"}
-                  className="h-auto py-3"
-                  onClick={() => searchRoutes(time)}
-                  disabled={searching}
-                >
-                  <Clock className="w-4 h-4 mr-1" />
-                  {time}
-                </Button>
-              ))}
-            </div>
+            {trainSchedule.map((train) => (
+              <Card 
+                key={train.trainNumber}
+                className={cn(
+                  "shadow-soft cursor-pointer transition-smooth hover:shadow-medium",
+                  selectedTrain?.trainNumber === train.trainNumber && "ring-2 ring-primary"
+                )}
+                onClick={() => searchRoutes(train)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-primary/10 px-3 py-1 rounded-md">
+                        <span className="text-sm font-bold text-primary">{train.type}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-lg font-bold text-foreground">{train.time}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <MapPin className="w-4 h-4" />
+                        <span>{train.destination}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">{train.trainNumber}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         )}
 
@@ -252,11 +287,26 @@ const Train = () => {
                     <div className="h-px bg-border flex-1" />
                   </div>
                   
-                  <div className="bg-secondary rounded-lg p-3 space-y-1.5">
+                  <div className="bg-secondary rounded-lg p-3 space-y-2">
                     <p className="font-semibold text-sm text-primary">기차 (조치원역 출발)</p>
-                    <div className="text-sm text-foreground">
-                      <div>출발 시간: {route.trainInfo.departureTime}</div>
-                      <div className="text-xs text-muted-foreground mt-1">
+                    <div className="text-sm text-foreground space-y-1">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">열차:</span>
+                        <span className="font-semibold">{route.trainInfo.type}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">출발:</span>
+                        <span className="font-semibold">{route.trainInfo.departureTime}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">도착역:</span>
+                        <span className="font-semibold">{route.trainInfo.destination}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">열차번호:</span>
+                        <span className="font-semibold text-xs">{route.trainInfo.trainNumber}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-border">
                         * {route.trainInfo.requiredArrival}까지 조치원역 도착 필요
                       </div>
                     </div>
