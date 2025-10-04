@@ -375,12 +375,12 @@ const Index = () => {
                     return (
                       <CarouselItem key={dayName}>
                          <div className="space-y-3">
-                          <div className="flex items-center justify-center gap-4">
-                            <div className="w-8" />
+                          <div className="flex items-center justify-center gap-12">
+                            <div className="w-6" />
                             <p className="text-sm font-bold text-primary">
                               {dayName}
                             </p>
-                            <div className="w-8" />
+                            <div className="w-6" />
                           </div>
                           {dayShuttles.length === 0 ? (
                             <div className="text-center py-8">
@@ -389,7 +389,7 @@ const Index = () => {
                               </p>
                             </div>
                           ) : (
-                            <div className="grid grid-cols-1 gap-3 max-h-[120px] overflow-y-auto scrollbar-hide">
+                            <div className="grid grid-cols-1 gap-3 h-[106px] overflow-y-auto scrollbar-hide">
                               {dayShuttles.map((shuttle) => (
                                 <div 
                                   key={shuttle.id}
@@ -427,8 +427,8 @@ const Index = () => {
                     );
                   })}
                 </CarouselContent>
-                <CarouselPrevious className="left-1/4 top-[18px] h-8 w-8" />
-                <CarouselNext className="right-1/4 top-[18px] h-8 w-8" />
+                <CarouselPrevious className="left-[15%] top-[18px] h-6 w-6" />
+                <CarouselNext className="right-[15%] top-[18px] h-6 w-6" />
               </Carousel>
             )}
           </CardContent>
