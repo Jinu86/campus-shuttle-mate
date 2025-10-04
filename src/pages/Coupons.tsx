@@ -262,7 +262,7 @@ const Coupons = () => {
               </p>
               <p>{selectedCoupon?.discount_description}</p>
               <p className="text-xs text-muted-foreground mt-2">
-                발급 후에는 취소할 수 없으며, 선택 가능 횟수가 1 차감됩니다.
+                확인 후 바로 직원에게 화면을 보여주세요. 발급 후에는 취소할 수 없으며, 선택 가능 횟수가 1 차감됩니다.
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
