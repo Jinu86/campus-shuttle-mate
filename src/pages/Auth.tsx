@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Bus, TestTube, Mail, Lock } from "lucide-react";
+import { Bus, Mail, Lock } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -20,9 +20,6 @@ const authSchema = z.object({
 const Auth = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [devMode, setDevMode] = useState(
-    typeof window !== 'undefined' && localStorage.getItem('DEV_MODE') === 'true'
-  );
 
   const loginForm = useForm<z.infer<typeof authSchema>>({
     resolver: zodResolver(authSchema),
@@ -42,21 +39,6 @@ const Auth = () => {
       }
     });
   }, [navigate]);
-
-  const toggleDevMode = () => {
-    const newDevMode = !devMode;
-    setDevMode(newDevMode);
-    if (newDevMode) {
-      localStorage.setItem('DEV_MODE', 'true');
-      toast.success("개발 모드 활성화! 페이지를 새로고침합니다...");
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 1000);
-    } else {
-      localStorage.removeItem('DEV_MODE');
-      toast.success("개발 모드 비활성화");
-    }
-  };
 
   const handleLogin = async (values: z.infer<typeof authSchema>) => {
     setLoading(true);
@@ -211,26 +193,8 @@ const Auth = () => {
               </form>
             </TabsContent>
           </Tabs>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">개발 모드</span>
-            </div>
-          </div>
-
-          <Button
-            onClick={toggleDevMode}
-            variant="outline"
-            className="w-full h-12 text-base font-medium"
-          >
-            <TestTube className="w-5 h-5 mr-2" />
-            {devMode ? "개발 모드 비활성화" : "개발 모드로 테스트하기"}
-          </Button>
           
-          <p className="text-xs text-center text-muted-foreground">
+          <p className="text-xs text-center text-muted-foreground mt-4">
             로그인하면 서비스 이용약관 및 개인정보처리방침에 동의하게 됩니다
           </p>
         </CardContent>

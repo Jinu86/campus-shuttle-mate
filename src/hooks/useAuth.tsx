@@ -2,36 +2,13 @@ import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-// 개발 모드용 가짜 유저 생성 (유효한 UUID 형식 사용)
-const createDevUser = (): User => ({
-  id: '00000000-0000-0000-0000-000000000000',
-  email: 'test@dev.com',
-  app_metadata: {},
-  user_metadata: {},
-  aud: 'authenticated',
-  created_at: new Date().toISOString(),
-} as User);
-
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  
-  // 개발 모드 체크
-  const isDevMode = typeof window !== 'undefined' && localStorage.getItem('DEV_MODE') === 'true';
 
   useEffect(() => {
-    // 개발 모드인 경우 가짜 유저로 설정
-    if (isDevMode) {
-      const devUser = createDevUser();
-      setUser(devUser);
-      setSession({ user: devUser } as Session);
-      setIsAdmin(false);
-      setLoading(false);
-      return;
-    }
-
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -61,7 +38,7 @@ export const useAuth = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [isDevMode]);
+  }, []);
 
   const checkAdminRole = async (userId: string) => {
     try {
