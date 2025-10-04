@@ -23,12 +23,6 @@ const Train = () => {
   const [routes, setRoutes] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
 
-  useEffect(() => {
-    if (!user) {
-      toast.error("로그인이 필요합니다.");
-      navigate("/auth");
-    }
-  }, [user, navigate]);
 
   const searchRoutes = async () => {
     if (!trainDate || !trainDepartureTime) {
@@ -110,7 +104,13 @@ const Train = () => {
   };
 
   const registerRoute = async (route: any) => {
-    if (!user || !trainDate) return;
+    if (!user) {
+      toast.error("로그인이 필요합니다.");
+      navigate("/auth");
+      return;
+    }
+    
+    if (!trainDate) return;
 
     try {
       // Insert trip
