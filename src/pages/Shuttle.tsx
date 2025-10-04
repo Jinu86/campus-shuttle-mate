@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Bus, Bell } from "lucide-react";
+import { Bell } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -58,15 +58,15 @@ const Shuttle = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="max-w-md mx-auto p-6 space-y-6">
-        <div className="pt-2">
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Bus className="w-6 h-6 text-primary" />
-            셔틀버스
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">오늘의 셔틀 시간표</p>
+    <div className="min-h-screen bg-background pb-20">
+      {/* Header */}
+      <header className="bg-card border-b border-border sticky top-0 z-10">
+        <div className="max-w-md mx-auto px-5 py-4">
+          <h1 className="text-xl font-bold text-foreground">셔틀</h1>
         </div>
+      </header>
+
+      <div className="max-w-md mx-auto px-5 py-6 space-y-6">
 
         <div className="space-y-4">
           {shuttles.map((shuttle) => (

@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Utensils } from "lucide-react";
 
 const Cafeteria = () => {
   const TEMP_USER_ID = "00000000-0000-0000-0000-000000000000";
@@ -96,15 +95,15 @@ const Cafeteria = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="max-w-md mx-auto p-6 space-y-6">
-        <div className="pt-2">
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Utensils className="w-6 h-6 text-primary" />
-            학식
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">오늘의 학식 메뉴</p>
+    <div className="min-h-screen bg-background pb-20">
+      {/* Header */}
+      <header className="bg-card border-b border-border sticky top-0 z-10">
+        <div className="max-w-md mx-auto px-5 py-4">
+          <h1 className="text-xl font-bold text-foreground">학식</h1>
         </div>
+      </header>
+
+      <div className="max-w-md mx-auto px-5 py-6 space-y-6">
 
         <Card className="shadow-soft">
           <CardContent className="p-5">

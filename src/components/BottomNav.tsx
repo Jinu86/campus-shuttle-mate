@@ -35,7 +35,6 @@ const BottomNav = () => {
                 <Icon 
                   className="w-6 h-6" 
                   strokeWidth={isActive ? 2.5 : 1.5}
-                  fill={isActive ? "currentColor" : "none"}
                 />
                 <span className={cn("text-[10px] mt-1", isActive ? "font-bold" : "font-medium")}>{item.label}</span>
               </button>

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Train as TrainIcon, Clock, MapPin } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
 
 const Train = () => {
   const navigate = useNavigate();
@@ -28,43 +28,19 @@ const Train = () => {
     try {
       const mockRoutes = [
         {
-          type: destination === "오송역" ? "기차환승" : "직행",
-          totalTime: destination === "오송역" ? 50 : 35,
+          type: "직행",
+          totalTime: 35,
           shuttleInfo: {
             departureTime: "14:00",
-            arrivalTime: destination === "오송역" ? "14:25" : "14:20",
+            arrivalTime: "14:20",
           },
-          transferInfo: destination === "오송역" ? {
-            type: "KTX",
-            departureTime: "14:35",
-            duration: 10,
-          } : null,
+          transferInfo: null,
           trainInfo: {
-            type: destination === "오송역" ? "KTX" : "ITX",
-            departureTime: destination === "오송역" ? "14:45" : "14:30",
+            type: "ITX",
+            departureTime: "14:30",
           },
         },
       ];
-
-      if (destination === "오송역") {
-        mockRoutes.push({
-          type: "버스환승",
-          totalTime: 55,
-          shuttleInfo: {
-            departureTime: "13:55",
-            arrivalTime: "14:20",
-          },
-          transferInfo: {
-            type: "시내버스",
-            departureTime: "14:30",
-            duration: 15,
-          },
-          trainInfo: {
-            type: "KTX",
-            departureTime: "14:50",
-          },
-        });
-      }
 
       setRoutes(mockRoutes);
     } catch (error) {
@@ -93,15 +69,15 @@ const Train = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="max-w-md mx-auto p-6 space-y-6">
-        <div className="pt-2">
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <TrainIcon className="w-6 h-6 text-primary" />
-            기차 시간
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">셔틀과 연계된 경로를 찾아보세요</p>
+    <div className="min-h-screen bg-background pb-20">
+      {/* Header */}
+      <header className="bg-card border-b border-border sticky top-0 z-10">
+        <div className="max-w-md mx-auto px-5 py-4">
+          <h1 className="text-xl font-bold text-foreground">기차</h1>
         </div>
+      </header>
+
+      <div className="max-w-md mx-auto px-5 py-6 space-y-6">
 
         <Card className="shadow-soft">
           <CardHeader className="pb-3">
@@ -116,7 +92,6 @@ const Train = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="조치원역">조치원역</SelectItem>
-                  <SelectItem value="오송역">오송역</SelectItem>
                 </SelectContent>
               </Select>
             </div>

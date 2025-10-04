@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Bus, Train } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 const trainSchedules = {
   "mugunghwa-3410": { name: "무궁화 3410", arrivalTime: "14:30", departureFromSeoul: "12:45" },
@@ -15,9 +16,11 @@ const trainSchedules = {
 
 const Index = () => {
   const navigate = useNavigate();
-  const [shuttles, setShuttles] = useState<any[]>([]);
+  const [allShuttles, setAllShuttles] = useState<any[]>([]);
   const [selectedTrain, setSelectedTrain] = useState<string>("mugunghwa-3410");
   const [tripType, setTripType] = useState<"board" | "alight">("alight");
+
+  const dayTypes = ["평일", "주말", "방학"];
 
   useEffect(() => {
     loadShuttles();
@@ -28,11 +31,10 @@ const Index = () => {
       const { data, error } = await supabase
         .from("shuttle_schedules")
         .select("*")
-        .eq("day_type", "평일")
         .order("departure_time");
 
       if (error) throw error;
-      setShuttles(data || []);
+      setAllShuttles(data || []);
     } catch (error) {
       console.error("셔틀 로드 실패:", error);
     }
@@ -40,6 +42,7 @@ const Index = () => {
 
   const getCalculatedTime = () => {
     const train = trainSchedules[selectedTrain as keyof typeof trainSchedules];
+    const shuttles = allShuttles.filter(s => s.day_type === "평일");
     
     if (tripType === "alight") {
       // 내릴때: 기차 도착 후 다음 셔틀 찾기
@@ -251,13 +254,57 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        {/* 서툴시간표 이미지 배너 */}
-        <div 
-          className="bg-muted rounded-lg h-52 flex items-center justify-center cursor-pointer hover:bg-muted/80 transition-colors"
-          onClick={() => navigate("/shuttle")}
-        >
-          <p className="text-lg font-medium text-muted-foreground">서툴시간표 이미지</p>
-        </div>
+        {/* 셔틀 시간표 */}
+        <Card className="shadow-soft border-border bg-card">
+          <CardContent className="p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground">셔틀 시간표</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/shuttle")}
+                className="text-xs"
+              >
+                전체보기
+              </Button>
+            </div>
+            
+            <Carousel className="w-full">
+              <CarouselContent>
+                {dayTypes.map((dayType) => {
+                  const dayShuttles = allShuttles.filter(s => s.day_type === dayType);
+                  return (
+                    <CarouselItem key={dayType}>
+                      <div className="space-y-3">
+                        <p className="text-center text-sm font-bold text-primary">{dayType}</p>
+                        <div className="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto">
+                          {dayShuttles.map((shuttle) => (
+                            <div 
+                              key={shuttle.id}
+                              className="bg-secondary rounded-lg p-3 space-y-1"
+                            >
+                              <p className="text-lg font-bold text-foreground">
+                                {shuttle.departure_time.substring(0, 5)}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {shuttle.destination}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {shuttle.duration_minutes}분
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </CarouselItem>
+                  );
+                })}
+              </CarouselContent>
+              <CarouselPrevious className="left-2" />
+              <CarouselNext className="right-2" />
+            </Carousel>
+          </CardContent>
+        </Card>
       </div>
 
       <BottomNav />

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { User, Train, Bell } from "lucide-react";
+import { Bell } from "lucide-react";
 
 const My = () => {
   const navigate = useNavigate();
@@ -62,21 +62,21 @@ const My = () => {
 
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="max-w-md mx-auto p-6 space-y-6">
-        <div className="pt-2">
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <User className="w-6 h-6 text-primary" />
-            MY
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">내 정보 관리</p>
+    <div className="min-h-screen bg-background pb-20">
+      {/* Header */}
+      <header className="bg-card border-b border-border sticky top-0 z-10">
+        <div className="max-w-md mx-auto px-5 py-4">
+          <h1 className="text-xl font-bold text-foreground">MY</h1>
         </div>
+      </header>
+
+      <div className="max-w-md mx-auto px-5 py-6 space-y-6">
 
 
         <Card className="shadow-soft">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
-              <Train className="w-5 h-5 text-primary" />
+              <Bell className="w-5 h-5 text-primary" />
               현재 등록된 기차 시간
             </CardTitle>
           </CardHeader>
