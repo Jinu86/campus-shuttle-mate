@@ -126,6 +126,7 @@ export type Database = {
       }
       shuttle_schedules: {
         Row: {
+          arrival_time: string | null
           created_at: string | null
           day_type: string
           departure_time: string
@@ -135,6 +136,7 @@ export type Database = {
           notes: string | null
         }
         Insert: {
+          arrival_time?: string | null
           created_at?: string | null
           day_type: string
           departure_time: string
@@ -144,6 +146,7 @@ export type Database = {
           notes?: string | null
         }
         Update: {
+          arrival_time?: string | null
           created_at?: string | null
           day_type?: string
           departure_time?: string
