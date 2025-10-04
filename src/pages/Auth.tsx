@@ -4,11 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Bus } from "lucide-react";
+import { Bus, TestTube } from "lucide-react";
 
 const Auth = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [devMode, setDevMode] = useState(
+    typeof window !== 'undefined' && localStorage.getItem('DEV_MODE') === 'true'
+  );
 
   useEffect(() => {
     // Check if user is already logged in
@@ -18,6 +21,21 @@ const Auth = () => {
       }
     });
   }, [navigate]);
+
+  const toggleDevMode = () => {
+    const newDevMode = !devMode;
+    setDevMode(newDevMode);
+    if (newDevMode) {
+      localStorage.setItem('DEV_MODE', 'true');
+      toast.success("개발 모드 활성화! 페이지를 새로고침합니다...");
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1000);
+    } else {
+      localStorage.removeItem('DEV_MODE');
+      toast.success("개발 모드 비활성화");
+    }
+  };
 
   const handleKakaoLogin = async () => {
     setLoading(true);
@@ -68,6 +86,24 @@ const Auth = () => {
                 카카오로 3초 만에 시작하기
               </div>
             )}
+          </Button>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">또는</span>
+            </div>
+          </div>
+
+          <Button
+            onClick={toggleDevMode}
+            variant="outline"
+            className="w-full h-12 text-base font-medium"
+          >
+            <TestTube className="w-5 h-5 mr-2" />
+            {devMode ? "개발 모드 비활성화" : "개발 모드로 테스트하기"}
           </Button>
           
           <p className="text-xs text-center text-muted-foreground">
