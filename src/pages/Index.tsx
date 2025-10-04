@@ -367,36 +367,29 @@ const Index = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <h3 className="text-lg font-bold text-foreground">셔틀 시간표</h3>
-                <div 
-                  className="relative flex items-center bg-muted/60 rounded-full p-0.5 cursor-pointer h-9 border border-border/50 shadow-sm"
-                  onClick={() => setShuttleDirection(shuttleDirection === "toStation" ? "toSchool" : "toStation")}
-                >
-                  {/* Sliding knob with shadow */}
-                  <div 
+                <div className="inline-flex items-center bg-muted/60 rounded-full p-0.5 border border-border/50 shadow-sm">
+                  <button
+                    onClick={() => setShuttleDirection("toStation")}
                     className={cn(
-                      "absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] bg-background rounded-full shadow-md border border-border transition-all duration-300 ease-in-out",
-                      shuttleDirection === "toStation" ? "left-0.5" : "right-0.5"
+                      "relative px-3 py-1 text-xs whitespace-nowrap rounded-full transition-all duration-300",
+                      shuttleDirection === "toStation"
+                        ? "bg-background font-semibold text-foreground shadow-sm border border-border"
+                        : "font-normal text-muted-foreground"
                     )}
-                  />
-                  {/* Button labels */}
-                  <div className="relative z-10 flex w-full">
-                    <div className={cn(
-                      "flex-1 px-4 py-1.5 text-xs text-center transition-all duration-300 whitespace-nowrap",
-                      shuttleDirection === "toStation" 
-                        ? "font-semibold text-foreground" 
+                  >
+                    학교 출발
+                  </button>
+                  <button
+                    onClick={() => setShuttleDirection("toSchool")}
+                    className={cn(
+                      "relative px-3 py-1 text-xs whitespace-nowrap rounded-full transition-all duration-300",
+                      shuttleDirection === "toSchool"
+                        ? "bg-background font-semibold text-foreground shadow-sm border border-border"
                         : "font-normal text-muted-foreground"
-                    )}>
-                      학교 출발
-                    </div>
-                    <div className={cn(
-                      "flex-1 px-4 py-1.5 text-xs text-center transition-all duration-300 whitespace-nowrap",
-                      shuttleDirection === "toSchool" 
-                        ? "font-semibold text-foreground" 
-                        : "font-normal text-muted-foreground"
-                    )}>
-                      조치원역 출발
-                    </div>
-                  </div>
+                    )}
+                  >
+                    조치원역 출발
+                  </button>
                 </div>
               </div>
               <Button
