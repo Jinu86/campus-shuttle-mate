@@ -368,14 +368,14 @@ const Index = () => {
               <div className="flex items-center gap-3">
                 <h3 className="text-lg font-bold text-foreground">셔틀 시간표</h3>
                 <div 
-                  className="relative flex items-center bg-muted/60 rounded-full p-1 cursor-pointer h-9 border border-border/50 shadow-sm"
+                  className="relative flex items-center bg-muted/60 rounded-full p-0.5 cursor-pointer h-9 border border-border/50 shadow-sm"
                   onClick={() => setShuttleDirection(shuttleDirection === "toStation" ? "toSchool" : "toStation")}
                 >
                   {/* Sliding knob with shadow */}
                   <div 
                     className={cn(
-                      "absolute top-1 bottom-1 w-[calc(50%-4px)] bg-background rounded-full shadow-md border border-border transition-all duration-300 ease-in-out",
-                      shuttleDirection === "toStation" ? "left-1" : "left-[calc(50%+3px)]"
+                      "absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] bg-background rounded-full shadow-md border border-border transition-all duration-300 ease-in-out",
+                      shuttleDirection === "toStation" ? "left-0.5" : "right-0.5"
                     )}
                   />
                   {/* Button labels */}
