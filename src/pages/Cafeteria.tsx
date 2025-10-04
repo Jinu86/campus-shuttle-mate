@@ -49,6 +49,28 @@ const Cafeteria = () => {
 
   const toggleMenuAlarm = async (enabled: boolean) => {
     try {
+      if (enabled) {
+        // 푸시 알림 권한 요청
+        if ('Notification' in window) {
+          const permission = await Notification.requestPermission();
+          
+          if (permission !== 'granted') {
+            toast.error("알림 권한이 필요합니다. 브라우저 설정에서 알림을 허용해주세요.");
+            return;
+          }
+          
+          // 테스트 알림 표시
+          new Notification("학식 알림 설정 완료", {
+            body: "매일 아침 학식 메뉴를 알려드릴게요! 🍚",
+            icon: "/favicon.ico",
+            badge: "/favicon.ico"
+          });
+        } else {
+          toast.error("이 브라우저는 알림을 지원하지 않습니다.");
+          return;
+        }
+      }
+
       const { error } = await supabase
         .from("user_settings")
         .upsert({ 
