@@ -162,46 +162,76 @@ const Index = () => {
           </Card>
         )}
 
-        {/* 가장 빠른 셔틀 표시 */}
+        {/* 다음 셔틀 시간 표시 */}
         {isSemesterActive && allShuttles.length > 0 && (() => {
           const now = new Date();
           const currentMinutes = now.getHours() * 60 + now.getMinutes();
+          const dbDayType = getDayTypeForDB(currentDayName);
           
-          // 요일 무관하게 월~목 시간표 사용
-          const dbDayType = "월~목";
-          const todayShuttles = allShuttles.filter(s => s.day_type === dbDayType);
-          const nextShuttle = todayShuttles.find(s => {
+          // 토요일이면 dbDayType이 null이므로 빈 배열 사용
+          const isSaturday = currentDayName === "토요일";
+          const todayShuttles = isSaturday ? [] : allShuttles.filter(s => s.day_type === dbDayType);
+          
+          // 학교에서 출발하는 다음 셔틀 (destination: "조치원역")
+          const nextSchoolShuttle = todayShuttles.find(s => {
+            if (s.destination !== "조치원역") return false;
+            const shuttleTime = s.departure_time.split(":");
+            const shuttleMinutes = parseInt(shuttleTime[0]) * 60 + parseInt(shuttleTime[1]);
+            return shuttleMinutes > currentMinutes;
+          });
+          
+          // 조치원역에서 출발하는 다음 셔틀 (destination: "학교")
+          const nextStationShuttle = todayShuttles.find(s => {
+            if (s.destination !== "학교") return false;
             const shuttleTime = s.departure_time.split(":");
             const shuttleMinutes = parseInt(shuttleTime[0]) * 60 + parseInt(shuttleTime[1]);
             return shuttleMinutes > currentMinutes;
           });
 
           return (
-            <Card className="shadow-soft border-border bg-card">
-              <CardContent className="p-5 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Bus className="w-6 h-6 text-primary flex-shrink-0" strokeWidth={2} />
-                  <p className="text-base font-medium text-foreground">다음 셔틀</p>
-                </div>
-                <div className="flex items-center justify-between">
+            <div className="grid grid-cols-2 gap-3">
+              {/* 학교 출발 */}
+              <Card className="shadow-soft border-border bg-card">
+                <CardContent className="p-4 space-y-2">
+                  <div className="flex items-center gap-1.5">
+                    <Bus className="w-5 h-5 text-primary flex-shrink-0" strokeWidth={2} />
+                    <p className="text-sm font-medium text-foreground">학교 출발</p>
+                  </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">학교앞 → 조치원역</p>
-                    <p className="text-4xl font-black text-foreground">
-                      {nextShuttle ? nextShuttle.departure_time.substring(0, 5) : "--:--"}
+                    <p className="text-3xl font-black text-foreground">
+                      {isSaturday || !nextSchoolShuttle ? "--:--" : nextSchoolShuttle.departure_time.substring(0, 5)}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground">도착</p>
-                    <p className="text-2xl font-bold text-foreground">
-                      {nextShuttle ? (nextShuttle.arrival_time?.substring(0, 5) || "-") : "--:--"}
+                  <div>
+                    <p className="text-xs text-muted-foreground">도착</p>
+                    <p className="text-lg font-bold text-foreground">
+                      {isSaturday || !nextSchoolShuttle ? "--:--" : (nextSchoolShuttle.arrival_time?.substring(0, 5) || "-")}
                     </p>
                   </div>
-                </div>
-                {nextShuttle?.notes && (
-                  <p className="text-xs text-muted-foreground">{nextShuttle.notes}</p>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+              
+              {/* 조치원역 출발 */}
+              <Card className="shadow-soft border-border bg-card">
+                <CardContent className="p-4 space-y-2">
+                  <div className="flex items-center gap-1.5">
+                    <Bus className="w-5 h-5 text-primary flex-shrink-0" strokeWidth={2} />
+                    <p className="text-sm font-medium text-foreground">조치원역 출발</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black text-foreground">
+                      {isSaturday || !nextStationShuttle ? "--:--" : nextStationShuttle.departure_time.substring(0, 5)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">도착</p>
+                    <p className="text-lg font-bold text-foreground">
+                      {isSaturday || !nextStationShuttle ? "--:--" : (nextStationShuttle.arrival_time?.substring(0, 5) || "-")}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           );
         })()}
 
