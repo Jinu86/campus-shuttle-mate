@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Clock, MapPin, Calendar as CalendarIcon } from "lucide-react";
@@ -22,9 +23,10 @@ const Train = () => {
   const [selectedTrain, setSelectedTrain] = useState<any>(null);
   const [routes, setRoutes] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
+  const [routeType, setRouteType] = useState<"departure" | "arrival">("departure");
   
-  // 조치원역 기차 시간표 (예시 데이터)
-  const trainSchedule = [
+  // 조치원역 출발 기차 시간표
+  const trainScheduleDeparture = [
     { type: "ITX-새마을", time: "06:30", destination: "용산", trainNumber: "ITX-새마을 1001" },
     { type: "무궁화호", time: "07:15", destination: "서울", trainNumber: "무궁화 1301" },
     { type: "ITX-마음", time: "08:00", destination: "용산", trainNumber: "ITX-마음 1106" },
@@ -46,6 +48,31 @@ const Train = () => {
     { type: "ITX-마음", time: "20:00", destination: "용산", trainNumber: "ITX-마음 1114" },
     { type: "무궁화호", time: "20:45", destination: "청량리", trainNumber: "무궁화 1319" },
     { type: "ITX-새마을", time: "21:30", destination: "용산", trainNumber: "ITX-새마을 1011" },
+  ];
+
+  // 조치원역 도착 기차 시간표
+  const trainScheduleArrival = [
+    { type: "ITX-새마을", time: "07:30", origin: "용산", trainNumber: "ITX-새마을 1002" },
+    { type: "무궁화호", time: "08:15", origin: "서울", trainNumber: "무궁화 1302" },
+    { type: "ITX-마음", time: "09:00", origin: "용산", trainNumber: "ITX-마음 1107" },
+    { type: "무궁화호", time: "09:45", origin: "청량리", trainNumber: "무궁화 1304" },
+    { type: "ITX-새마을", time: "10:30", origin: "용산", trainNumber: "ITX-새마을 1004" },
+    { type: "무궁화호", time: "11:15", origin: "서울", trainNumber: "무궁화 1306" },
+    { type: "ITX-마음", time: "12:00", origin: "용산", trainNumber: "ITX-마음 1109" },
+    { type: "무궁화호", time: "12:45", origin: "청량리", trainNumber: "무궁화 1308" },
+    { type: "ITX-새마을", time: "13:30", origin: "용산", trainNumber: "ITX-새마을 1006" },
+    { type: "무궁화호", time: "14:15", origin: "서울", trainNumber: "무궁화 1310" },
+    { type: "ITX-마음", time: "15:00", origin: "용산", trainNumber: "ITX-마음 1111" },
+    { type: "무궁화호", time: "15:45", origin: "청량리", trainNumber: "무궁화 1312" },
+    { type: "ITX-새마을", time: "16:30", origin: "용산", trainNumber: "ITX-새마을 1008" },
+    { type: "무궁화호", time: "17:15", origin: "서울", trainNumber: "무궁화 1314" },
+    { type: "ITX-마음", time: "18:00", origin: "용산", trainNumber: "ITX-마음 1113" },
+    { type: "무궁화호", time: "18:45", origin: "청량리", trainNumber: "무궁화 1316" },
+    { type: "ITX-새마을", time: "19:30", origin: "용산", trainNumber: "ITX-새마을 1010" },
+    { type: "무궁화호", time: "20:15", origin: "서울", trainNumber: "무궁화 1318" },
+    { type: "ITX-마음", time: "21:00", origin: "용산", trainNumber: "ITX-마음 1115" },
+    { type: "무궁화호", time: "21:45", origin: "청량리", trainNumber: "무궁화 1320" },
+    { type: "ITX-새마을", time: "22:30", origin: "용산", trainNumber: "ITX-새마을 1012" },
   ];
 
 
@@ -222,40 +249,78 @@ const Train = () => {
         </Card>
 
         {trainDate && (
-          <div className="space-y-3">
-            <h2 className="text-lg font-bold text-foreground">기차 시간 선택</h2>
-            {trainSchedule.map((train) => (
-              <Card 
-                key={train.trainNumber}
-                className={cn(
-                  "shadow-soft cursor-pointer transition-smooth hover:shadow-medium",
-                  selectedTrain?.trainNumber === train.trainNumber && "ring-2 ring-primary"
-                )}
-                onClick={() => searchRoutes(train)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-primary/10 px-3 py-1 rounded-md">
-                        <span className="text-sm font-bold text-primary">{train.type}</span>
+          <Tabs defaultValue="departure" className="w-full" onValueChange={(value) => setRouteType(value as "departure" | "arrival")}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="departure">조치원역 출발</TabsTrigger>
+              <TabsTrigger value="arrival">조치원역 도착</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="departure" className="space-y-3 mt-4">
+              <h2 className="text-lg font-bold text-foreground">기차 시간 선택</h2>
+              {trainScheduleDeparture.map((train) => (
+                <Card 
+                  key={train.trainNumber}
+                  className={cn(
+                    "shadow-soft cursor-pointer transition-smooth hover:shadow-medium",
+                    selectedTrain?.trainNumber === train.trainNumber && "ring-2 ring-primary"
+                  )}
+                  onClick={() => searchRoutes(train)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-primary/10 px-3 py-1 rounded-md">
+                          <span className="text-sm font-bold text-primary">{train.type}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-lg font-bold text-foreground">{train.time}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-lg font-bold text-foreground">{train.time}</span>
+                      <div className="text-right">
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <MapPin className="w-4 h-4" />
+                          <span>{train.destination}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">{train.trainNumber}</div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <MapPin className="w-4 h-4" />
-                        <span>{train.destination}</span>
+                  </CardContent>
+                </Card>
+              ))}
+            </TabsContent>
+
+            <TabsContent value="arrival" className="space-y-3 mt-4">
+              <h2 className="text-lg font-bold text-foreground">기차 시간 선택</h2>
+              {trainScheduleArrival.map((train) => (
+                <Card 
+                  key={train.trainNumber}
+                  className="shadow-soft"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-primary/10 px-3 py-1 rounded-md">
+                          <span className="text-sm font-bold text-primary">{train.type}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-lg font-bold text-foreground">{train.time}</span>
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground mt-1">{train.trainNumber}</div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <MapPin className="w-4 h-4" />
+                          <span>{train.origin}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">{train.trainNumber}</div>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </TabsContent>
+          </Tabs>
         )}
 
         {routes.length > 0 && (
