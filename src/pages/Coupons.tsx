@@ -26,6 +26,8 @@ const Coupons = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showCouponDetailDialog, setShowCouponDetailDialog] = useState(false);
   const [issuedCoupon, setIssuedCoupon] = useState<any>(null);
+  const [issuedCouponId, setIssuedCouponId] = useState<string | null>(null);
+  const [isCouponUsed, setIsCouponUsed] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -104,12 +106,14 @@ const Coupons = () => {
     try {
       // 트랜잭션처럼 처리하기 위해 순차적으로 실행
       // 1. 쿠폰 선택 기록
-      const { error: insertError } = await supabase
+      const { data: insertedCoupon, error: insertError } = await supabase
         .from("user_selected_coupons")
         .insert({
           user_id: user.id,
           coupon_id: selectedCoupon.id,
-        });
+        })
+        .select()
+        .single();
 
       if (insertError) throw insertError;
 
@@ -136,11 +140,35 @@ const Coupons = () => {
       toast.success("쿠폰이 발급되었습니다!");
       setShowConfirmDialog(false);
       setIssuedCoupon(selectedCoupon);
+      setIssuedCouponId(insertedCoupon.id);
+      setIsCouponUsed(false);
       setShowCouponDetailDialog(true);
       loadData(); // 데이터 새로고침
     } catch (error: any) {
       console.error("쿠폰 선택 실패:", error);
       toast.error(error.message || "쿠폰 선택에 실패했습니다.");
+    }
+  };
+
+  const handleUseCoupon = async () => {
+    if (!issuedCouponId) return;
+
+    try {
+      const { error } = await supabase
+        .from("user_selected_coupons")
+        .update({
+          is_used: true,
+          used_at: new Date().toISOString(),
+        })
+        .eq("id", issuedCouponId);
+
+      if (error) throw error;
+
+      setIsCouponUsed(true);
+      toast.success("쿠폰이 사용 처리되었습니다!");
+    } catch (error: any) {
+      console.error("쿠폰 사용 처리 실패:", error);
+      toast.error(error.message || "쿠폰 사용 처리에 실패했습니다.");
     }
   };
 
@@ -316,12 +344,20 @@ const Coupons = () => {
 
                     <div className="bg-muted/50 rounded-lg p-4 text-center">
                       <p className="text-xs text-muted-foreground mb-2">
-                        매장에서 이 화면을 제시해주세요
+                        직원에게 이 화면을 제시하고 사용 확인을 받으세요
                       </p>
                       <div className="bg-background rounded p-4 border-2 border-dashed border-border">
                         <Gift className="w-12 h-12 text-primary mx-auto" />
                       </div>
                     </div>
+                    
+                    {isCouponUsed && (
+                      <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
+                        <p className="text-sm font-medium text-green-700 dark:text-green-400 text-center">
+                          ✓ 사용 완료
+                        </p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
                 
@@ -332,23 +368,48 @@ const Coupons = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-col gap-2">
-            <AlertDialogAction onClick={() => {
-              setShowCouponDetailDialog(false);
-              setIssuedCoupon(null);
-            }} className="w-full">
-              확인
-            </AlertDialogAction>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowCouponDetailDialog(false);
-                setIssuedCoupon(null);
-                navigate("/my");
-              }}
-              className="w-full"
-            >
-              마이페이지로 이동
-            </Button>
+            {!isCouponUsed ? (
+              <>
+                <AlertDialogAction onClick={handleUseCoupon} className="w-full">
+                  사용 확인 (직원용)
+                </AlertDialogAction>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowCouponDetailDialog(false);
+                    setIssuedCoupon(null);
+                    setIssuedCouponId(null);
+                  }}
+                  className="w-full"
+                >
+                  나중에 사용
+                </Button>
+              </>
+            ) : (
+              <>
+                <AlertDialogAction onClick={() => {
+                  setShowCouponDetailDialog(false);
+                  setIssuedCoupon(null);
+                  setIssuedCouponId(null);
+                  setIsCouponUsed(false);
+                }} className="w-full">
+                  확인
+                </AlertDialogAction>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowCouponDetailDialog(false);
+                    setIssuedCoupon(null);
+                    setIssuedCouponId(null);
+                    setIsCouponUsed(false);
+                    navigate("/my");
+                  }}
+                  className="w-full"
+                >
+                  마이페이지로 이동
+                </Button>
+              </>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
