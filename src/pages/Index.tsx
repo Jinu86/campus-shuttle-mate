@@ -402,12 +402,12 @@ const Index = () => {
                                         {shuttle.departure_time.substring(0, 5)}
                                       </p>
                                     </div>
-                                    <div className="text-center px-2">
-                                      <p className="text-xs text-muted-foreground">→</p>
+                                    <div className="text-center px-2 flex items-center">
+                                      <p className="text-xl text-muted-foreground">→</p>
                                     </div>
                                     <div className="text-right">
                                       <p className="text-xs text-muted-foreground">도착</p>
-                                      <p className="text-xl font-bold text-foreground">
+                                      <p className="text-2xl font-bold text-foreground">
                                         {shuttle.arrival_time?.substring(0, 5) || "-"}
                                       </p>
                                     </div>
