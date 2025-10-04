@@ -154,42 +154,36 @@ const Cafeteria = () => {
               </TabsContent>
 
               {/* 중식 탭 */}
-              <TabsContent value="중식" className="mt-4">
-                <Tabs defaultValue="한식" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3 mb-4">
-                    <TabsTrigger value="한식">한식</TabsTrigger>
-                    <TabsTrigger value="일품">일품</TabsTrigger>
-                    <TabsTrigger value="분식">분식</TabsTrigger>
-                  </TabsList>
-                  {["한식", "일품", "분식"].map((category) => {
-                    const menu = lunchMenus.find(m => m.meal_type === `점심-${category}`);
-                    return (
-                      <TabsContent key={category} value={category} className="mt-0">
-                        {menu ? (
-                          <>
-                            <div className="flex justify-end mb-3">
-                              <span className="text-xl font-extrabold text-accent">
-                                {menu.price?.toLocaleString()}원
-                              </span>
-                            </div>
-                            <ul className="space-y-2">
-                              {menu.menu_items.map((item: string, idx: number) => (
-                                <li key={idx} className="flex items-start gap-2 text-sm">
-                                  <span className="text-primary mt-0.5">•</span>
-                                  <span className="text-foreground">{item}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </>
-                        ) : (
-                          <p className="text-sm text-muted-foreground text-center py-8">
-                            등록된 메뉴가 없어요!
-                          </p>
+              <TabsContent value="중식" className="mt-4 space-y-6">
+                {["한식", "일품", "분식"].map((category) => {
+                  const menu = lunchMenus.find(m => m.meal_type === `점심-${category}`);
+                  return (
+                    <div key={category} className="space-y-3">
+                      <div className="flex items-center justify-between border-b border-border pb-2">
+                        <h3 className="text-base font-bold text-foreground">{category}</h3>
+                        {menu && (
+                          <span className="text-lg font-extrabold text-accent">
+                            {menu.price?.toLocaleString()}원
+                          </span>
                         )}
-                      </TabsContent>
-                    );
-                  })}
-                </Tabs>
+                      </div>
+                      {menu ? (
+                        <ul className="space-y-2">
+                          {menu.menu_items.map((item: string, idx: number) => (
+                            <li key={idx} className="flex items-start gap-2 text-sm">
+                              <span className="text-primary mt-0.5">•</span>
+                              <span className="text-foreground">{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          등록된 메뉴가 없어요!
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
               </TabsContent>
 
               {/* 석식 탭 */}
