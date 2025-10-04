@@ -121,24 +121,45 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string | null
+          department: string | null
+          full_name: string | null
           id: string
+          id_number: string | null
           kakao_id: string | null
+          phone: string | null
           referral_code: string | null
           referred_by: string | null
+          school: string | null
+          student_id: string | null
+          username: string | null
         }
         Insert: {
           created_at?: string | null
+          department?: string | null
+          full_name?: string | null
           id: string
+          id_number?: string | null
           kakao_id?: string | null
+          phone?: string | null
           referral_code?: string | null
           referred_by?: string | null
+          school?: string | null
+          student_id?: string | null
+          username?: string | null
         }
         Update: {
           created_at?: string | null
+          department?: string | null
+          full_name?: string | null
           id?: string
+          id_number?: string | null
           kakao_id?: string | null
+          phone?: string | null
           referral_code?: string | null
           referred_by?: string | null
+          school?: string | null
+          student_id?: string | null
+          username?: string | null
         }
         Relationships: []
       }
