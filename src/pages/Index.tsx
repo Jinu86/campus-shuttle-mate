@@ -383,7 +383,20 @@ const Index = () => {
                 <CarouselContent>
                   {dayTypes.map((dayName) => {
                     const dbDayType = getDayTypeForDB(dayName);
-                    const dayShuttles = dbDayType ? allShuttles.filter(s => s.day_type === dbDayType) : [];
+                    const isToday = dayName === currentDayName;
+                    const now = new Date();
+                    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                    
+                    let dayShuttles = dbDayType ? allShuttles.filter(s => s.day_type === dbDayType) : [];
+                    
+                    // 당일인 경우 현재 시간 이후의 셔틀만 표시
+                    if (isToday && dayShuttles.length > 0) {
+                      dayShuttles = dayShuttles.filter(shuttle => {
+                        const [h, m] = shuttle.departure_time.split(":").map(Number);
+                        return h * 60 + m > currentMinutes;
+                      });
+                    }
+                    
                     return (
                       <CarouselItem key={dayName}>
                          <div className="space-y-3">
