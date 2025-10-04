@@ -20,26 +20,40 @@ const Index = () => {
   const [selectedTrain, setSelectedTrain] = useState<string>("mugunghwa-3410");
   const [tripType, setTripType] = useState<"board" | "alight">("alight");
   const [isSemesterActive, setIsSemesterActive] = useState(true);
+  const [currentDayIndex, setCurrentDayIndex] = useState(0);
 
-  // Get current day and organize day types
-  const getCurrentDayType = () => {
+  // Get current day
+  const getCurrentDayName = () => {
     const day = new Date().getDay(); // 0=일요일, 1=월, 2=화, 3=수, 4=목, 5=금, 6=토
-    if (day === 0) return "일요일";
-    if (day >= 1 && day <= 4) return "월~목";
-    if (day === 5) return "금요일";
-    return "토요일"; // 토요일은 운휴
+    const dayNames = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+    return dayNames[day];
   };
 
-  const currentDayType = getCurrentDayType();
+  // Map day name to DB day_type
+  const getDayTypeForDB = (dayName: string) => {
+    if (dayName === "월요일" || dayName === "화요일" || dayName === "수요일" || dayName === "목요일") {
+      return "월~목";
+    }
+    return dayName;
+  };
+
+  const currentDayName = getCurrentDayName();
   
-  // Organize day types with current day first
-  const allDayTypes = ["월~목", "금요일", "일요일"];
-  const dayTypes = currentDayType === "토요일" 
+  // All individual day types
+  const allDayTypes = ["월요일", "화요일", "수요일", "목요일", "금요일", "일요일"];
+  
+  // Organize with current day first
+  const dayTypes = currentDayName === "토요일" 
     ? allDayTypes 
-    : [currentDayType, ...allDayTypes.filter(d => d !== currentDayType)];
+    : [currentDayName, ...allDayTypes.filter(d => d !== currentDayName)];
 
   useEffect(() => {
     loadShuttles();
+    // Set initial carousel index to current day
+    const currentIndex = dayTypes.indexOf(currentDayName);
+    if (currentIndex !== -1) {
+      setCurrentDayIndex(currentIndex);
+    }
   }, []);
 
   const loadShuttles = async () => {
@@ -72,8 +86,8 @@ const Index = () => {
 
   const getCalculatedTime = () => {
     const train = trainSchedules[selectedTrain as keyof typeof trainSchedules];
-    const dayType = getCurrentDayType() === "토요일" ? "월~목" : getCurrentDayType();
-    const shuttles = allShuttles.filter(s => s.day_type === dayType);
+    const dbDayType = currentDayName === "토요일" ? "월~목" : getDayTypeForDB(currentDayName);
+    const shuttles = allShuttles.filter(s => s.day_type === dbDayType);
     
     if (tripType === "alight") {
       // 내릴때: 기차 도착 후 다음 셔틀 찾기 (조치원역→학교)
@@ -149,7 +163,7 @@ const Index = () => {
           </Card>
         )}
 
-        {currentDayType === "토요일" && (
+        {currentDayName === "토요일" && (
           <Card className="shadow-soft border-destructive bg-destructive/10">
             <CardContent className="p-4 text-center">
               <p className="text-base font-bold text-destructive">
@@ -160,10 +174,11 @@ const Index = () => {
         )}
 
         {/* 가장 빠른 셔틀 표시 */}
-        {isSemesterActive && currentDayType !== "토요일" && allShuttles.length > 0 && (() => {
+        {isSemesterActive && currentDayName !== "토요일" && allShuttles.length > 0 && (() => {
           const now = new Date();
           const currentMinutes = now.getHours() * 60 + now.getMinutes();
-          const todayShuttles = allShuttles.filter(s => s.day_type === currentDayType);
+          const dbDayType = getDayTypeForDB(currentDayName);
+          const todayShuttles = allShuttles.filter(s => s.day_type === dbDayType);
           const nextShuttle = todayShuttles.find(s => {
             const shuttleTime = s.departure_time.split(":");
             const shuttleMinutes = parseInt(shuttleTime[0]) * 60 + parseInt(shuttleTime[1]);
@@ -352,15 +367,16 @@ const Index = () => {
                 <p className="text-muted-foreground">방학 중에는 셔틀이 운행하지 않습니다</p>
               </div>
             ) : (
-              <Carousel className="w-full">
+              <Carousel className="w-full" opts={{ startIndex: currentDayIndex }}>
                 <CarouselContent>
-                  {dayTypes.map((dayType) => {
-                    const dayShuttles = allShuttles.filter(s => s.day_type === dayType);
+                  {dayTypes.map((dayName) => {
+                    const dbDayType = getDayTypeForDB(dayName);
+                    const dayShuttles = allShuttles.filter(s => s.day_type === dbDayType);
                     return (
-                      <CarouselItem key={dayType}>
+                      <CarouselItem key={dayName}>
                         <div className="space-y-3">
                           <p className="text-center text-sm font-bold text-primary">
-                            {dayType} {dayType === currentDayType && "(오늘)"}
+                            {dayName} {dayName === currentDayName && "(오늘)"}
                           </p>
                           {dayShuttles.length === 0 ? (
                             <div className="text-center py-8">
