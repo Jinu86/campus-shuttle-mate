@@ -367,9 +367,11 @@ const Index = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <h3 className="text-lg font-bold text-foreground">셔틀 시간표</h3>
-                <div className="inline-flex items-center bg-muted/60 rounded-full p-0.5 border border-border/50 shadow-sm">
-                  <button
-                    onClick={() => setShuttleDirection("toStation")}
+                <div 
+                  className="inline-flex items-center bg-muted/60 rounded-full p-0.5 border border-border/50 shadow-sm cursor-pointer"
+                  onClick={() => setShuttleDirection(shuttleDirection === "toStation" ? "toSchool" : "toStation")}
+                >
+                  <div
                     className={cn(
                       "relative px-3 py-1 text-xs whitespace-nowrap rounded-full transition-all duration-300",
                       shuttleDirection === "toStation"
@@ -378,9 +380,8 @@ const Index = () => {
                     )}
                   >
                     학교 출발
-                  </button>
-                  <button
-                    onClick={() => setShuttleDirection("toSchool")}
+                  </div>
+                  <div
                     className={cn(
                       "relative px-3 py-1 text-xs whitespace-nowrap rounded-full transition-all duration-300",
                       shuttleDirection === "toSchool"
@@ -389,7 +390,7 @@ const Index = () => {
                     )}
                   >
                     조치원역 출발
-                  </button>
+                  </div>
                 </div>
               </div>
               <Button
