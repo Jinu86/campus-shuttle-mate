@@ -194,7 +194,7 @@ const Index = () => {
                 <CardContent className="p-4 space-y-2">
                   <div className="flex items-center gap-1.5">
                     <Bus className="w-5 h-5 text-primary flex-shrink-0" strokeWidth={2} />
-                    <p className="text-sm font-medium text-foreground">학교에서 출발</p>
+                    <p className="text-sm font-medium text-foreground">학교 출발</p>
                   </div>
                   <p className="text-3xl font-black text-foreground">
                     {isSaturday || !nextSchoolShuttle ? "--:--" : nextSchoolShuttle.departure_time.substring(0, 5)}
@@ -212,7 +212,7 @@ const Index = () => {
                 <CardContent className="p-4 space-y-2">
                   <div className="flex items-center gap-1.5">
                     <Bus className="w-5 h-5 text-primary flex-shrink-0" strokeWidth={2} />
-                    <p className="text-sm font-medium text-foreground">조치원역에서 출발</p>
+                    <p className="text-sm font-medium text-foreground">조치원역 출발</p>
                   </div>
                   <p className="text-3xl font-black text-foreground">
                     {isSaturday || !nextStationShuttle ? "--:--" : nextStationShuttle.departure_time.substring(0, 5)}
