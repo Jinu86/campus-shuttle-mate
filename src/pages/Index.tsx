@@ -40,11 +40,8 @@ const Index = () => {
 
   const currentDayName = getCurrentDayName();
   
-  // All individual day types (including 토요일)
-  const allDayTypes = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"];
-  
-  // Organize with current day first
-  const dayTypes = [currentDayName, ...allDayTypes.filter(d => d !== currentDayName)];
+  // All day types in order (월~일)
+  const dayTypes = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"];
 
   useEffect(() => {
     loadShuttles();
@@ -370,7 +367,7 @@ const Index = () => {
                 <p className="text-muted-foreground">방학 중에는 셔틀이 운행하지 않습니다</p>
               </div>
             ) : (
-              <Carousel className="w-full" opts={{ startIndex: currentDayIndex }}>
+              <Carousel className="w-full" opts={{ startIndex: currentDayIndex, loop: true }}>
                 <CarouselContent>
                   {dayTypes.map((dayName) => {
                     const dbDayType = getDayTypeForDB(dayName);
