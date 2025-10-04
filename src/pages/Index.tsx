@@ -367,10 +367,7 @@ const Index = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <h3 className="text-lg font-bold text-foreground">셔틀 시간표</h3>
-                <div className="inline-flex items-center gap-2 min-w-[180px]">
-                  <span className="text-sm font-medium text-foreground">
-                    {shuttleDirection === "toStation" ? "조치원역 출발" : "학교 출발"}
-                  </span>
+                <div className="inline-flex items-center gap-2">
                   <Button
                     variant="default"
                     size="icon"
@@ -379,6 +376,9 @@ const Index = () => {
                   >
                     <ArrowLeftRight className="h-4 w-4" />
                   </Button>
+                  <span className="text-sm font-medium text-foreground">
+                    {shuttleDirection === "toStation" ? "조치원역 출발" : "학교 출발"}
+                  </span>
                 </div>
               </div>
               <Button
