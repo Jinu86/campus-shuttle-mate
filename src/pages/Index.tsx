@@ -34,18 +34,17 @@ const Index = () => {
     if (dayName === "월요일" || dayName === "화요일" || dayName === "수요일" || dayName === "목요일") {
       return "월~목";
     }
+    if (dayName === "토요일") return null;
     return dayName;
   };
 
   const currentDayName = getCurrentDayName();
   
-  // All individual day types
-  const allDayTypes = ["월요일", "화요일", "수요일", "목요일", "금요일", "일요일"];
+  // All individual day types (including 토요일)
+  const allDayTypes = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"];
   
   // Organize with current day first
-  const dayTypes = currentDayName === "토요일" 
-    ? allDayTypes 
-    : [currentDayName, ...allDayTypes.filter(d => d !== currentDayName)];
+  const dayTypes = [currentDayName, ...allDayTypes.filter(d => d !== currentDayName)];
 
   useEffect(() => {
     loadShuttles();
@@ -163,21 +162,36 @@ const Index = () => {
           </Card>
         )}
 
-        {currentDayName === "토요일" && (
-          <Card className="shadow-soft border-destructive bg-destructive/10">
-            <CardContent className="p-4 text-center">
-              <p className="text-base font-bold text-destructive">
-                토요일은 셔틀이 운휴합니다
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
         {/* 가장 빠른 셔틀 표시 */}
-        {isSemesterActive && currentDayName !== "토요일" && allShuttles.length > 0 && (() => {
+        {isSemesterActive && allShuttles.length > 0 && (() => {
           const now = new Date();
           const currentMinutes = now.getHours() * 60 + now.getMinutes();
           const dbDayType = getDayTypeForDB(currentDayName);
+          
+          // 토요일이면 "--:--" 표시
+          if (currentDayName === "토요일" || !dbDayType) {
+            return (
+              <Card className="shadow-soft border-border bg-card">
+                <CardContent className="p-5 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Bus className="w-6 h-6 text-primary flex-shrink-0" strokeWidth={2} />
+                    <p className="text-base font-medium text-foreground">다음 셔틀</p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">학교앞 → 조치원역</p>
+                      <p className="text-4xl font-black text-foreground">--:--</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">도착</p>
+                      <p className="text-2xl font-bold text-foreground">--:--</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          }
+          
           const todayShuttles = allShuttles.filter(s => s.day_type === dbDayType);
           const nextShuttle = todayShuttles.find(s => {
             const shuttleTime = s.departure_time.split(":");
@@ -371,7 +385,7 @@ const Index = () => {
                 <CarouselContent>
                   {dayTypes.map((dayName) => {
                     const dbDayType = getDayTypeForDB(dayName);
-                    const dayShuttles = allShuttles.filter(s => s.day_type === dbDayType);
+                    const dayShuttles = dbDayType ? allShuttles.filter(s => s.day_type === dbDayType) : [];
                     return (
                       <CarouselItem key={dayName}>
                         <div className="space-y-3">
@@ -380,7 +394,9 @@ const Index = () => {
                           </p>
                           {dayShuttles.length === 0 ? (
                             <div className="text-center py-8">
-                              <p className="text-muted-foreground">운행 정보가 없습니다</p>
+                              <p className="text-muted-foreground">
+                                {dayName === "토요일" ? "토요일은 셔틀이 운휴합니다" : "운행 정보가 없습니다"}
+                              </p>
                             </div>
                           ) : (
                             <div className="grid grid-cols-1 gap-3 max-h-[300px] overflow-y-auto">
