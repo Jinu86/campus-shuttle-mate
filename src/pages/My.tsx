@@ -128,7 +128,7 @@ const My = () => {
     }
   };
 
-  const handleKakaoLogin = async () => {
+  const handleLogin = () => {
     navigate("/auth");
   };
 
@@ -166,8 +166,8 @@ const My = () => {
                     친구 추천 시 추가 쿠폰 지급!
                   </p>
                 </div>
-                <Button onClick={handleKakaoLogin} className="w-full bg-[#FEE500] hover:bg-[#FEE500]/90 text-[#000000] font-semibold">
-                  카카오로 로그인하기
+                <Button onClick={handleLogin} className="w-full">
+                  로그인하기
                 </Button>
               </div>
             </CardContent>
@@ -384,7 +384,7 @@ const My = () => {
                   <p className="text-sm text-muted-foreground">
                     로그인이 필요한 서비스입니다
                   </p>
-                  <Button onClick={handleKakaoLogin} size="sm">
+                  <Button onClick={handleLogin} size="sm">
                     로그인하기
                   </Button>
                 </div>
@@ -404,7 +404,7 @@ const My = () => {
                   <p className="text-sm text-muted-foreground">
                     로그인이 필요한 서비스입니다
                   </p>
-                  <Button onClick={handleKakaoLogin} size="sm">
+                  <Button onClick={handleLogin} size="sm">
                     로그인하기
                   </Button>
                 </div>
