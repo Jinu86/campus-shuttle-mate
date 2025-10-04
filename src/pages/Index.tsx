@@ -21,6 +21,7 @@ const Index = () => {
   const [tripType, setTripType] = useState<"board" | "alight">("alight");
   const [isSemesterActive, setIsSemesterActive] = useState(true);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
+  const [shuttleDirection, setShuttleDirection] = useState<"toStation" | "toSchool">("toStation");
 
   // Get current day
   const getCurrentDayName = () => {
@@ -364,14 +365,34 @@ const Index = () => {
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-foreground">셔틀 시간표</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/shuttle")}
-                className="text-xs"
-              >
-                전체보기
-              </Button>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 bg-muted rounded-md p-1">
+                  <Button
+                    variant={shuttleDirection === "toStation" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setShuttleDirection("toStation")}
+                    className="text-xs h-7 px-2"
+                  >
+                    학교 출발
+                  </Button>
+                  <Button
+                    variant={shuttleDirection === "toSchool" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setShuttleDirection("toSchool")}
+                    className="text-xs h-7 px-2"
+                  >
+                    조치원역 출발
+                  </Button>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/shuttle")}
+                  className="text-xs"
+                >
+                  전체보기
+                </Button>
+              </div>
             </div>
             
             {!isSemesterActive ? (
@@ -387,7 +408,11 @@ const Index = () => {
                     const now = new Date();
                     const currentMinutes = now.getHours() * 60 + now.getMinutes();
                     
-                    let dayShuttles = dbDayType ? allShuttles.filter(s => s.day_type === dbDayType) : [];
+                    // 목적지에 따라 필터링
+                    const destination = shuttleDirection === "toStation" ? "조치원역" : "학교";
+                    let dayShuttles = dbDayType 
+                      ? allShuttles.filter(s => s.day_type === dbDayType && s.destination === destination) 
+                      : [];
                     
                     // 당일인 경우 현재 시간 이후의 셔틀만 표시
                     if (isToday && dayShuttles.length > 0) {
@@ -437,9 +462,9 @@ const Index = () => {
                                       </p>
                                     </div>
                                   </div>
-                                  <p className="text-xs text-muted-foreground">
-                                    학교앞 → 조치원역
-                                  </p>
+                                   <p className="text-xs text-muted-foreground">
+                                     {shuttleDirection === "toStation" ? "학교앞 → 조치원역" : "조치원역 → 학교앞"}
+                                   </p>
                                   {shuttle.notes && (
                                     <p className="text-xs text-primary">{shuttle.notes}</p>
                                   )}
