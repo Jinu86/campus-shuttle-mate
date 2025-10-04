@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bus, Train } from "lucide-react";
+import { Bus, Train, ArrowLeftRight } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
@@ -365,32 +365,20 @@ const Index = () => {
         <Card className="shadow-soft border-border bg-card">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold text-foreground">셔틀 시간표</h3>
-                <div 
-                  className="inline-flex items-center bg-muted/60 rounded-full p-0.5 border border-border/50 shadow-sm cursor-pointer"
-                  onClick={() => setShuttleDirection(shuttleDirection === "toStation" ? "toSchool" : "toStation")}
-                >
-                  <div
-                    className={cn(
-                      "relative px-3 py-1 text-xs whitespace-nowrap rounded-full transition-all duration-300",
-                      shuttleDirection === "toStation"
-                        ? "bg-background font-semibold text-foreground shadow-sm border border-border"
-                        : "font-normal text-muted-foreground"
-                    )}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-foreground">
+                    {shuttleDirection === "toStation" ? "학교 출발" : "조치원역 출발"}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setShuttleDirection(shuttleDirection === "toStation" ? "toSchool" : "toStation")}
                   >
-                    학교 출발
-                  </div>
-                  <div
-                    className={cn(
-                      "relative px-3 py-1 text-xs whitespace-nowrap rounded-full transition-all duration-300",
-                      shuttleDirection === "toSchool"
-                        ? "bg-background font-semibold text-foreground shadow-sm border border-border"
-                        : "font-normal text-muted-foreground"
-                    )}
-                  >
-                    조치원역 출발
-                  </div>
+                    <ArrowLeftRight className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
               <Button
