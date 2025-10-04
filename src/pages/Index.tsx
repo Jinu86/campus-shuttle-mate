@@ -166,32 +166,9 @@ const Index = () => {
         {isSemesterActive && allShuttles.length > 0 && (() => {
           const now = new Date();
           const currentMinutes = now.getHours() * 60 + now.getMinutes();
-          const dbDayType = getDayTypeForDB(currentDayName);
           
-          // 토요일이거나 dbDayType이 없으면 "--:--" 표시
-          if (currentDayName === "토요일" || !dbDayType) {
-            return (
-              <Card className="shadow-soft border-border bg-card">
-                <CardContent className="p-5 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Bus className="w-6 h-6 text-primary flex-shrink-0" strokeWidth={2} />
-                    <p className="text-base font-medium text-foreground">다음 셔틀</p>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">학교앞 → 조치원역</p>
-                      <p className="text-4xl font-black text-foreground">--:--</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">도착</p>
-                      <p className="text-2xl font-bold text-foreground">--:--</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          }
-          
+          // 요일 무관하게 월~목 시간표 사용
+          const dbDayType = "월~목";
           const todayShuttles = allShuttles.filter(s => s.day_type === dbDayType);
           const nextShuttle = todayShuttles.find(s => {
             const shuttleTime = s.departure_time.split(":");
@@ -199,7 +176,6 @@ const Index = () => {
             return shuttleMinutes > currentMinutes;
           });
 
-          // 다음 셔틀이 있으면 표시, 없으면 "--:--" 표시
           return (
             <Card className="shadow-soft border-border bg-card">
               <CardContent className="p-5 space-y-2">
