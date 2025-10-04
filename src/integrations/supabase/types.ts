@@ -79,6 +79,45 @@ export type Database = {
         }
         Relationships: []
       }
+      coupons: {
+        Row: {
+          created_at: string
+          discount_description: string
+          id: string
+          is_active: boolean
+          issued_count: number
+          max_issuance: number | null
+          store_name: string
+          terms: string | null
+          valid_from: string
+          valid_until: string
+        }
+        Insert: {
+          created_at?: string
+          discount_description: string
+          id?: string
+          is_active?: boolean
+          issued_count?: number
+          max_issuance?: number | null
+          store_name: string
+          terms?: string | null
+          valid_from?: string
+          valid_until: string
+        }
+        Update: {
+          created_at?: string
+          discount_description?: string
+          id?: string
+          is_active?: boolean
+          issued_count?: number
+          max_issuance?: number | null
+          store_name?: string
+          terms?: string | null
+          valid_from?: string
+          valid_until?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -102,6 +141,45 @@ export type Database = {
           referred_by?: string | null
         }
         Relationships: []
+      }
+      referral_history: {
+        Row: {
+          coupon_awarded: boolean
+          created_at: string
+          id: string
+          referred_id: string
+          referrer_id: string
+        }
+        Insert: {
+          coupon_awarded?: boolean
+          created_at?: string
+          id?: string
+          referred_id: string
+          referrer_id: string
+        }
+        Update: {
+          coupon_awarded?: boolean
+          created_at?: string
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_history_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_history_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       semester_status: {
         Row: {
@@ -198,6 +276,41 @@ export type Database = {
           },
         ]
       }
+      user_coupons: {
+        Row: {
+          available_count: number
+          created_at: string
+          id: string
+          total_earned: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          available_count?: number
+          created_at?: string
+          id?: string
+          total_earned?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          available_count?: number
+          created_at?: string
+          id?: string
+          total_earned?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_coupons_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -218,6 +331,51 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_selected_coupons: {
+        Row: {
+          coupon_id: string
+          created_at: string
+          id: string
+          is_used: boolean
+          selected_at: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          coupon_id: string
+          created_at?: string
+          id?: string
+          is_used?: boolean
+          selected_at?: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          coupon_id?: string
+          created_at?: string
+          id?: string
+          is_used?: boolean
+          selected_at?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_selected_coupons_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_selected_coupons_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_settings: {
         Row: {
@@ -253,6 +411,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_referral_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

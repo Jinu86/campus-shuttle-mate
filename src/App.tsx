@@ -11,6 +11,7 @@ import Train from "./pages/Train";
 import Shuttle from "./pages/Shuttle";
 import Cafeteria from "./pages/Cafeteria";
 import My from "./pages/My";
+import Coupons from "./pages/Coupons";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/shuttle" element={<Shuttle />} />
           <Route path="/cafeteria" element={<Cafeteria />} />
           <Route path="/my" element={<My />} />
+          <Route path="/coupons" element={<Coupons />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
