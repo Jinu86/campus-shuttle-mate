@@ -168,16 +168,18 @@ const My = () => {
       </header>
 
       <div className="max-w-md mx-auto px-5 py-6 space-y-6">
-        {/* 쿠폰 사용처 (로그인 없이 확인 가능) */}
+        {/* 제휴 쿠폰 안내 */}
         <Card className="shadow-soft">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
               <Ticket className="w-5 h-5 text-primary" />
-              제휴 쿠폰 안내
+              {user ? "발급 가능한 제휴 쿠폰" : "제휴 쿠폰 안내"}
             </CardTitle>
-            <p className="text-sm text-muted-foreground mt-2">
-              로그인 후 쿠폰을 발급받을 수 있습니다
-            </p>
+            {!user && (
+              <p className="text-sm text-muted-foreground mt-2">
+                로그인 후 쿠폰을 발급받을 수 있습니다
+              </p>
+            )}
           </CardHeader>
           <CardContent>
             {coupons.length > 0 ? (
