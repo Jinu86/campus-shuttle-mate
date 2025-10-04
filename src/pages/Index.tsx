@@ -60,7 +60,7 @@ const Index = () => {
       // Load shuttle schedules
       const { data: shuttleData, error: shuttleError } = await supabase
         .from("shuttle_schedules")
-        .select("id, day_type, departure_time, arrival_time, notes")
+        .select("id, day_type, destination, departure_time, arrival_time, notes")
         .order("departure_time");
 
       if (shuttleError) throw shuttleError;
@@ -163,45 +163,33 @@ const Index = () => {
         )}
 
         {/* 다음 셔틀 시간 표시 */}
-        {isSemesterActive && allShuttles.length > 0 && (() => {
+        {(() => {
           const now = new Date();
           const currentMinutes = now.getHours() * 60 + now.getMinutes();
           const dbDayType = getDayTypeForDB(currentDayName);
-          
-          // 토요일이면 dbDayType이 null이므로 빈 배열 사용
           const isSaturday = currentDayName === "토요일";
-          const todayShuttles = isSaturday ? [] : allShuttles.filter(s => s.day_type === dbDayType);
-          
-          // 학교에서 출발하는 다음 셔틀 (destination: "조치원역")
-          const nextSchoolShuttle = todayShuttles.find(s => {
-            if (s.destination !== "조치원역") return false;
-            const shuttleTime = s.departure_time.split(":");
-            const shuttleMinutes = parseInt(shuttleTime[0]) * 60 + parseInt(shuttleTime[1]);
-            return shuttleMinutes > currentMinutes;
+          const todayShuttles = isSaturday || !dbDayType ? [] : allShuttles.filter(s => s.day_type === dbDayType);
+
+          const findNext = (dest: string) => todayShuttles.find(s => {
+            if (s.destination !== dest) return false;
+            const [h, m] = s.departure_time.split(":").map(Number);
+            return h * 60 + m > currentMinutes;
           });
-          
-          // 조치원역에서 출발하는 다음 셔틀 (destination: "학교")
-          const nextStationShuttle = todayShuttles.find(s => {
-            if (s.destination !== "학교") return false;
-            const shuttleTime = s.departure_time.split(":");
-            const shuttleMinutes = parseInt(shuttleTime[0]) * 60 + parseInt(shuttleTime[1]);
-            return shuttleMinutes > currentMinutes;
-          });
+
+          const nextSchoolShuttle = findNext("조치원역");
+          const nextStationShuttle = findNext("학교");
 
           return (
             <div className="grid grid-cols-2 gap-3">
-              {/* 학교 출발 */}
               <Card className="shadow-soft border-border bg-card">
                 <CardContent className="p-4 space-y-2">
                   <div className="flex items-center gap-1.5">
                     <Bus className="w-5 h-5 text-primary flex-shrink-0" strokeWidth={2} />
-                    <p className="text-sm font-medium text-foreground">학교 출발</p>
+                    <p className="text-sm font-medium text-foreground">학교에서 출발</p>
                   </div>
-                  <div>
-                    <p className="text-3xl font-black text-foreground">
-                      {isSaturday || !nextSchoolShuttle ? "--:--" : nextSchoolShuttle.departure_time.substring(0, 5)}
-                    </p>
-                  </div>
+                  <p className="text-3xl font-black text-foreground">
+                    {isSaturday || !nextSchoolShuttle ? "--:--" : nextSchoolShuttle.departure_time.substring(0, 5)}
+                  </p>
                   <div>
                     <p className="text-xs text-muted-foreground">도착</p>
                     <p className="text-lg font-bold text-foreground">
@@ -210,19 +198,16 @@ const Index = () => {
                   </div>
                 </CardContent>
               </Card>
-              
-              {/* 조치원역 출발 */}
+
               <Card className="shadow-soft border-border bg-card">
                 <CardContent className="p-4 space-y-2">
                   <div className="flex items-center gap-1.5">
                     <Bus className="w-5 h-5 text-primary flex-shrink-0" strokeWidth={2} />
-                    <p className="text-sm font-medium text-foreground">조치원역 출발</p>
+                    <p className="text-sm font-medium text-foreground">조치원역에서 출발</p>
                   </div>
-                  <div>
-                    <p className="text-3xl font-black text-foreground">
-                      {isSaturday || !nextStationShuttle ? "--:--" : nextStationShuttle.departure_time.substring(0, 5)}
-                    </p>
-                  </div>
+                  <p className="text-3xl font-black text-foreground">
+                    {isSaturday || !nextStationShuttle ? "--:--" : nextStationShuttle.departure_time.substring(0, 5)}
+                  </p>
                   <div>
                     <p className="text-xs text-muted-foreground">도착</p>
                     <p className="text-lg font-bold text-foreground">
