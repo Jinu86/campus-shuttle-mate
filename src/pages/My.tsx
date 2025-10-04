@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Bell, ShieldCheck, Gift, Share2, Copy, Ticket } from "lucide-react";
+import { Bell, ShieldCheck, Gift, Share2, Copy } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const My = () => {
@@ -16,32 +16,15 @@ const My = () => {
   const [alarms, setAlarms] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>(null);
   const [adminCode, setAdminCode] = useState("");
-  const [coupons, setCoupons] = useState<any[]>([]);
   const [userCoupons, setUserCoupons] = useState<any>(null);
   const [selectedCoupons, setSelectedCoupons] = useState<any[]>([]);
   const [referralCode, setReferralCode] = useState<string>("");
 
   useEffect(() => {
-    loadCoupons();
     if (user) {
       loadUserData();
     }
   }, [user]);
-
-  const loadCoupons = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("coupons")
-        .select("*")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setCoupons(data || []);
-    } catch (error) {
-      console.error("쿠폰 로드 실패:", error);
-    }
-  };
 
   const loadUserData = async () => {
     if (!user) return;
@@ -168,49 +151,6 @@ const My = () => {
       </header>
 
       <div className="max-w-md mx-auto px-5 py-6 space-y-6">
-        {/* 제휴 쿠폰 안내 */}
-        <Card className="shadow-soft">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
-              <Ticket className="w-5 h-5 text-primary" />
-              {user ? "발급 가능한 제휴 쿠폰" : "제휴 쿠폰 안내"}
-            </CardTitle>
-            {!user && (
-              <p className="text-sm text-muted-foreground mt-2">
-                로그인 후 쿠폰을 발급받을 수 있습니다
-              </p>
-            )}
-          </CardHeader>
-          <CardContent>
-            {coupons.length > 0 ? (
-              <div className="space-y-3">
-                {coupons.map((coupon) => (
-                  <div key={coupon.id} className="bg-secondary rounded-lg p-4 space-y-2">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-bold text-foreground">{coupon.store_name}</p>
-                        <p className="text-sm text-muted-foreground mt-1">{coupon.discount_description}</p>
-                      </div>
-                    </div>
-                    {coupon.max_issuance && (
-                      <p className="text-xs text-muted-foreground">
-                        발급: {coupon.issued_count}/{coupon.max_issuance}
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      유효기간: {new Date(coupon.valid_from).toLocaleDateString()} ~ {new Date(coupon.valid_until).toLocaleDateString()}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-sm text-muted-foreground py-6">
-                현재 이용 가능한 쿠폰이 없습니다.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
         {!user ? (
           /* 로그인 전 UI */
           <Card className="shadow-soft border-primary/20">
