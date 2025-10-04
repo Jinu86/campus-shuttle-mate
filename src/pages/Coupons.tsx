@@ -24,6 +24,8 @@ const Coupons = () => {
   const [userCoupons, setUserCoupons] = useState<any>(null);
   const [selectedCoupon, setSelectedCoupon] = useState<any>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showCouponDetailDialog, setShowCouponDetailDialog] = useState(false);
+  const [issuedCoupon, setIssuedCoupon] = useState<any>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -133,7 +135,9 @@ const Coupons = () => {
 
       toast.success("쿠폰이 발급되었습니다!");
       setShowConfirmDialog(false);
-      navigate("/my");
+      setIssuedCoupon(selectedCoupon);
+      setShowCouponDetailDialog(true);
+      loadData(); // 데이터 새로고침
     } catch (error: any) {
       console.error("쿠폰 선택 실패:", error);
       toast.error(error.message || "쿠폰 선택에 실패했습니다.");
@@ -229,7 +233,7 @@ const Coupons = () => {
                       disabled={!isAvailable || (userCoupons?.available_count || 0) <= 0}
                       className="w-full"
                     >
-                      {isAvailable ? "이 쿠폰 선택하기" : "발급 마감"}
+                      {isAvailable ? "이 쿠폰 사용하기" : "발급 마감"}
                     </Button>
                   </CardContent>
                 </Card>
@@ -251,14 +255,14 @@ const Coupons = () => {
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>쿠폰을 선택하시겠습니까?</AlertDialogTitle>
+            <AlertDialogTitle>쿠폰을 사용하시겠습니까?</AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
               <p className="font-medium text-foreground">
                 {selectedCoupon?.store_name}
               </p>
               <p>{selectedCoupon?.discount_description}</p>
               <p className="text-xs text-muted-foreground mt-2">
-                선택 후에는 취소할 수 없으며, 선택 가능 횟수가 1 차감됩니다.
+                발급 후에는 취소할 수 없으며, 선택 가능 횟수가 1 차감됩니다.
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -268,6 +272,83 @@ const Coupons = () => {
               <Check className="w-4 h-4 mr-2" />
               확인
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 쿠폰 상세 다이얼로그 */}
+      <AlertDialog open={showCouponDetailDialog} onOpenChange={setShowCouponDetailDialog}>
+        <AlertDialogContent className="max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-center text-xl">
+              쿠폰이 발급되었습니다! 🎉
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4 pt-4">
+                <Card className="border-primary/30">
+                  <CardContent className="pt-6 space-y-3">
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-foreground mb-2">
+                        {issuedCoupon?.store_name}
+                      </p>
+                      <div className="bg-primary/10 rounded-lg p-4 mb-3">
+                        <p className="font-medium text-primary">
+                          {issuedCoupon?.discount_description}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {issuedCoupon?.terms && (
+                      <div className="text-left">
+                        <p className="text-xs font-medium text-foreground mb-1">사용 조건</p>
+                        <p className="text-xs text-muted-foreground">
+                          {issuedCoupon.terms}
+                        </p>
+                      </div>
+                    )}
+                    
+                    <div className="text-left">
+                      <p className="text-xs font-medium text-foreground mb-1">유효 기간</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(issuedCoupon?.valid_from).toLocaleDateString()} ~ {new Date(issuedCoupon?.valid_until).toLocaleDateString()}
+                      </p>
+                    </div>
+
+                    <div className="bg-muted/50 rounded-lg p-4 text-center">
+                      <p className="text-xs text-muted-foreground mb-2">
+                        매장에서 이 화면을 제시해주세요
+                      </p>
+                      <div className="bg-background rounded p-4 border-2 border-dashed border-border">
+                        <Gift className="w-12 h-12 text-primary mx-auto" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <p className="text-xs text-center text-muted-foreground">
+                  발급받은 쿠폰은 '마이페이지'에서 확인할 수 있습니다.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-col gap-2">
+            <AlertDialogAction onClick={() => {
+              setShowCouponDetailDialog(false);
+              setIssuedCoupon(null);
+            }} className="w-full">
+              확인
+            </AlertDialogAction>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowCouponDetailDialog(false);
+                setIssuedCoupon(null);
+                navigate("/my");
+              }}
+              className="w-full"
+            >
+              마이페이지로 이동
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
