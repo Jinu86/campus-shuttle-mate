@@ -368,7 +368,7 @@ const Index = () => {
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold text-foreground">셔틀 시간표</h3>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-foreground">
+                  <span className="text-sm font-medium text-foreground w-24 text-center">
                     {shuttleDirection === "toStation" ? "학교 출발" : "조치원역 출발"}
                   </span>
                   <Button
