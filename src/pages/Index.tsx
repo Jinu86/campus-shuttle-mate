@@ -369,7 +369,63 @@ const Index = () => {
             ) : (
               <Carousel className="w-full" opts={{ startIndex: currentDayIndex, loop: true }}>
                 <CarouselContent>
-...
+                  {dayTypes.map((dayName) => {
+                    const dbDayType = getDayTypeForDB(dayName);
+                    const dayShuttles = dbDayType ? allShuttles.filter(s => s.day_type === dbDayType) : [];
+                    return (
+                      <CarouselItem key={dayName}>
+                         <div className="space-y-3">
+                          <div className="flex items-center justify-center gap-12">
+                            <div className="w-6" />
+                            <p className="text-sm font-bold text-primary">
+                              {dayName}
+                            </p>
+                            <div className="w-6" />
+                          </div>
+                          {dayShuttles.length === 0 ? (
+                            <div className="text-center py-8">
+                              <p className="text-muted-foreground">
+                                {dayName === "토요일" ? "토요일은 셔틀이 운휴합니다" : "운행 정보가 없습니다"}
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 gap-3 h-[106px] overflow-y-auto scrollbar-hide">
+                              {dayShuttles.map((shuttle) => (
+                                <div 
+                                  key={shuttle.id}
+                                  className="bg-secondary rounded-lg p-3 space-y-2"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <p className="text-xs text-muted-foreground">출발</p>
+                                      <p className="text-2xl font-bold text-foreground">
+                                        {shuttle.departure_time.substring(0, 5)}
+                                      </p>
+                                    </div>
+                                    <div className="text-center px-2">
+                                      <p className="text-xs text-muted-foreground">→</p>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-xs text-muted-foreground">도착</p>
+                                      <p className="text-xl font-bold text-foreground">
+                                        {shuttle.arrival_time?.substring(0, 5) || "-"}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground">
+                                    학교앞 → 조치원역
+                                  </p>
+                                  {shuttle.notes && (
+                                    <p className="text-xs text-primary">{shuttle.notes}</p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </CarouselItem>
+                    );
+                  })}
                 </CarouselContent>
               </Carousel>
             )}
