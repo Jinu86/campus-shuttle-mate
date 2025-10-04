@@ -365,16 +365,16 @@ const Index = () => {
         <Card className="shadow-soft border-border bg-card">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <h3 className="text-lg font-bold text-foreground">셔틀 시간표</h3>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-foreground w-24 text-center">
-                    {shuttleDirection === "toStation" ? "학교 출발" : "조치원역 출발"}
+                <div className="inline-flex items-center gap-2 min-w-[180px]">
+                  <span className="text-sm font-medium text-foreground">
+                    {shuttleDirection === "toStation" ? "조치원역 출발" : "학교 출발"}
                   </span>
                   <Button
-                    variant="ghost"
+                    variant="default"
                     size="icon"
-                    className="h-7 w-7"
+                    className="h-8 w-8 rounded-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 shrink-0"
                     onClick={() => setShuttleDirection(shuttleDirection === "toStation" ? "toSchool" : "toStation")}
                   >
                     <ArrowLeftRight className="h-4 w-4" />
