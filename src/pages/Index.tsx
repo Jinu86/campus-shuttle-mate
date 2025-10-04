@@ -19,8 +19,24 @@ const Index = () => {
   const [allShuttles, setAllShuttles] = useState<any[]>([]);
   const [selectedTrain, setSelectedTrain] = useState<string>("mugunghwa-3410");
   const [tripType, setTripType] = useState<"board" | "alight">("alight");
+  const [isSemesterActive, setIsSemesterActive] = useState(true);
 
-  const dayTypes = ["평일", "주말", "방학"];
+  // Get current day and organize day types
+  const getCurrentDayType = () => {
+    const day = new Date().getDay(); // 0=일요일, 1=월, 2=화, 3=수, 4=목, 5=금, 6=토
+    if (day === 0) return "일요일";
+    if (day >= 1 && day <= 4) return "월~목";
+    if (day === 5) return "금요일";
+    return "토요일"; // 토요일은 운휴
+  };
+
+  const currentDayType = getCurrentDayType();
+  
+  // Organize day types with current day first
+  const allDayTypes = ["월~목", "금요일", "일요일"];
+  const dayTypes = currentDayType === "토요일" 
+    ? allDayTypes 
+    : [currentDayType, ...allDayTypes.filter(d => d !== currentDayType)];
 
   useEffect(() => {
     loadShuttles();
@@ -28,13 +44,27 @@ const Index = () => {
 
   const loadShuttles = async () => {
     try {
-      const { data, error } = await supabase
+      // Load shuttle schedules
+      const { data: shuttleData, error: shuttleError } = await supabase
         .from("shuttle_schedules")
-        .select("*")
+        .select("id, day_type, departure_time, arrival_time, notes")
         .order("departure_time");
 
-      if (error) throw error;
-      setAllShuttles(data || []);
+      if (shuttleError) throw shuttleError;
+      setAllShuttles((shuttleData as any) || []);
+
+      // Load semester status
+      const { data: semesterData, error: semesterError } = await supabase
+        .from("semester_status")
+        .select("is_semester_active")
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (semesterError) throw semesterError;
+      if (semesterData) {
+        setIsSemesterActive(semesterData.is_semester_active);
+      }
     } catch (error) {
       console.error("셔틀 로드 실패:", error);
     }
@@ -42,15 +72,14 @@ const Index = () => {
 
   const getCalculatedTime = () => {
     const train = trainSchedules[selectedTrain as keyof typeof trainSchedules];
-    const shuttles = allShuttles.filter(s => s.day_type === "평일");
+    const dayType = getCurrentDayType() === "토요일" ? "월~목" : getCurrentDayType();
+    const shuttles = allShuttles.filter(s => s.day_type === dayType);
     
     if (tripType === "alight") {
-      // 내릴때: 기차 도착 후 다음 셔틀 찾기
+      // 내릴때: 기차 도착 후 다음 셔틀 찾기 (조치원역→학교)
       const arrivalMinutes = parseInt(train.arrivalTime.split(":")[0]) * 60 + parseInt(train.arrivalTime.split(":")[1]);
       
-      // 학교행 셔틀 찾기
-      const schoolShuttles = shuttles.filter(s => s.destination === "학교");
-      const nextShuttle = schoolShuttles.find(s => {
+      const nextShuttle = shuttles.find(s => {
         const shuttleTime = s.departure_time.split(":");
         const shuttleMinutes = parseInt(shuttleTime[0]) * 60 + parseInt(shuttleTime[1]);
         return shuttleMinutes > arrivalMinutes;
@@ -61,61 +90,39 @@ const Index = () => {
         const waitTime = shuttleMinutes - arrivalMinutes;
         return {
           shuttleTime: nextShuttle.departure_time.substring(0, 5),
+          arrivalTime: nextShuttle.arrival_time?.substring(0, 5) || "",
           waitTime,
           label: "조치원역에서 출발"
         };
       }
       
-      // 막차 시간 확인
-      const lastShuttle = schoolShuttles[schoolShuttles.length - 1];
-      if (lastShuttle) {
-        const lastShuttleTime = lastShuttle.departure_time.split(":");
-        const lastShuttleMinutes = parseInt(lastShuttleTime[0]) * 60 + parseInt(lastShuttleTime[1]);
-        if (arrivalMinutes > lastShuttleMinutes) {
-          return { shuttleTime: "없음", waitTime: 0, label: "조치원역에서 출발" };
-        }
-      }
-      
-      return { shuttleTime: "없음", waitTime: 0, label: "조치원역에서 출발" };
+      return { shuttleTime: "없음", arrivalTime: "", waitTime: 0, label: "조치원역에서 출발" };
     } else {
-      // 탈 때: 기차 타기 위해 교내 출발 셔틀 찾기
+      // 탈 때: 기차 타기 위해 학교에서 출발하는 셔틀 찾기
       const departureMinutes = parseInt(train.departureFromSeoul.split(":")[0]) * 60 + parseInt(train.departureFromSeoul.split(":")[1]);
-      // 기차 출발 1시간 전에 조치원역 도착해야 함
-      const requiredArrivalMinutes = departureMinutes - 60;
+      // 기차 출발 30분 전에 조치원역 도착해야 함
+      const requiredArrivalMinutes = departureMinutes - 30;
       
-      // 조치원역행 셔틀 찾기 (역순으로 가장 늦은 시간 찾기)
-      const stationShuttles = shuttles
-        .filter(s => s.destination === "조치원역")
-        .reverse();
+      // 역순으로 가장 늦은 시간 찾기
+      const reversedShuttles = [...shuttles].reverse();
       
-      const requiredShuttle = stationShuttles.find(s => {
-        const shuttleTime = s.departure_time.split(":");
-        const shuttleMinutes = parseInt(shuttleTime[0]) * 60 + parseInt(shuttleTime[1]);
-        const arrivalMinutes = shuttleMinutes + s.duration_minutes;
-        return arrivalMinutes <= requiredArrivalMinutes;
+      const requiredShuttle = reversedShuttles.find(s => {
+        if (!s.arrival_time) return false;
+        const arrivalTime = s.arrival_time.split(":");
+        const arrivalMins = parseInt(arrivalTime[0]) * 60 + parseInt(arrivalTime[1]);
+        return arrivalMins <= requiredArrivalMinutes;
       });
       
       if (requiredShuttle) {
         return {
           shuttleTime: requiredShuttle.departure_time.substring(0, 5),
+          arrivalTime: requiredShuttle.arrival_time?.substring(0, 5) || "",
           trainDeparture: train.departureFromSeoul,
-          label: "교내 셔틀 탑승 시간"
+          label: "학교앞 셔틀 탑승 시간"
         };
       }
       
-      // 막차 시간 확인
-      const firstShuttle = shuttles.find(s => s.destination === "조치원역");
-      if (firstShuttle) {
-        const firstShuttleTime = firstShuttle.departure_time.split(":");
-        const firstShuttleMinutes = parseInt(firstShuttleTime[0]) * 60 + parseInt(firstShuttleTime[1]);
-        const firstArrivalMinutes = firstShuttleMinutes + firstShuttle.duration_minutes;
-        
-        if (requiredArrivalMinutes < firstArrivalMinutes) {
-          return { shuttleTime: "없음", trainDeparture: train.departureFromSeoul, label: "교내 셔틀 탑승 시간" };
-        }
-      }
-      
-      return { shuttleTime: "없음", trainDeparture: train.departureFromSeoul, label: "교내 셔틀 탑승 시간" };
+      return { shuttleTime: "없음", arrivalTime: "", trainDeparture: train.departureFromSeoul, label: "학교앞 셔틀 탑승 시간" };
     }
   };
 
@@ -131,27 +138,69 @@ const Index = () => {
       </header>
 
       <div className="max-w-md mx-auto px-5 py-6 space-y-4">
-        {/* 학교에서 출발 카드 */}
-        <Card className="shadow-soft border-border bg-card">
-          <CardContent className="p-5 flex items-center gap-2">
-            <Bus className="w-8 h-8 text-primary flex-shrink-0" strokeWidth={2} />
-            <div className="flex-1">
-              <p className="text-base font-medium text-foreground mb-1">학교에서 출발</p>
-              <p className="text-5xl font-black text-foreground">08:00</p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* 운행 상태 알림 */}
+        {!isSemesterActive && (
+          <Card className="shadow-soft border-destructive bg-destructive/10">
+            <CardContent className="p-4 text-center">
+              <p className="text-base font-bold text-destructive">
+                방학 기간 중으로 셔틀이 운휴합니다
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* 조치원역에서 출발 카드 */}
-        <Card className="shadow-soft border-border bg-card">
-          <CardContent className="p-5 flex items-center gap-2">
-            <Bus className="w-8 h-8 text-primary flex-shrink-0" strokeWidth={2} />
-            <div className="flex-1">
-              <p className="text-base font-medium text-foreground mb-1">조치원역에서 출발</p>
-              <p className="text-5xl font-black text-foreground">08:10</p>
-            </div>
-          </CardContent>
-        </Card>
+        {currentDayType === "토요일" && (
+          <Card className="shadow-soft border-destructive bg-destructive/10">
+            <CardContent className="p-4 text-center">
+              <p className="text-base font-bold text-destructive">
+                토요일은 셔틀이 운휴합니다
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 가장 빠른 셔틀 표시 */}
+        {isSemesterActive && currentDayType !== "토요일" && allShuttles.length > 0 && (() => {
+          const now = new Date();
+          const currentMinutes = now.getHours() * 60 + now.getMinutes();
+          const todayShuttles = allShuttles.filter(s => s.day_type === currentDayType);
+          const nextShuttle = todayShuttles.find(s => {
+            const shuttleTime = s.departure_time.split(":");
+            const shuttleMinutes = parseInt(shuttleTime[0]) * 60 + parseInt(shuttleTime[1]);
+            return shuttleMinutes > currentMinutes;
+          });
+
+          if (nextShuttle) {
+            return (
+              <Card className="shadow-soft border-border bg-card">
+                <CardContent className="p-5 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Bus className="w-6 h-6 text-primary flex-shrink-0" strokeWidth={2} />
+                    <p className="text-base font-medium text-foreground">다음 셔틀</p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">학교앞 → 조치원역</p>
+                      <p className="text-4xl font-black text-foreground">
+                        {nextShuttle.departure_time.substring(0, 5)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">도착</p>
+                      <p className="text-2xl font-bold text-foreground">
+                        {nextShuttle.arrival_time?.substring(0, 5) || "-"}
+                      </p>
+                    </div>
+                  </div>
+                  {nextShuttle.notes && (
+                    <p className="text-xs text-muted-foreground">{nextShuttle.notes}</p>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          }
+          return null;
+        })()}
 
         {/* 서울 시간 계산기 카드 */}
         <Card className="shadow-soft border-border bg-card">
@@ -219,18 +268,33 @@ const Index = () => {
                       {trainSchedules[selectedTrain as keyof typeof trainSchedules].arrivalTime}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Bus className="w-5 h-5 text-primary" strokeWidth={2} />
-                    <p className="text-sm font-medium text-foreground">{calculatedResult.label}</p>
-                  </div>
-                  <p className="text-3xl font-black text-foreground">
-                    {calculatedResult.shuttleTime}{" "}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Bus className="w-5 h-5 text-primary" strokeWidth={2} />
+                      <p className="text-sm font-medium text-foreground">{calculatedResult.label}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-muted-foreground">출발</p>
+                        <p className="text-3xl font-black text-foreground">
+                          {calculatedResult.shuttleTime}
+                        </p>
+                      </div>
+                      {'arrivalTime' in calculatedResult && calculatedResult.arrivalTime && (
+                        <div className="text-right">
+                          <p className="text-xs text-muted-foreground">도착</p>
+                          <p className="text-2xl font-bold text-foreground">
+                            {calculatedResult.arrivalTime}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                     {'waitTime' in calculatedResult && calculatedResult.waitTime > 0 && (
-                      <span className="text-lg text-muted-foreground">
+                      <p className="text-sm text-muted-foreground">
                         ({calculatedResult.waitTime}분 대기)
-                      </span>
+                      </p>
                     )}
-                  </p>
+                  </div>
                 </>
               ) : (
                 <>
@@ -240,14 +304,28 @@ const Index = () => {
                       {'trainDeparture' in calculatedResult && calculatedResult.trainDeparture}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Bus className="w-5 h-5 text-primary" strokeWidth={2} />
-                    <p className="text-sm font-medium text-foreground">{calculatedResult.label}</p>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Bus className="w-5 h-5 text-primary" strokeWidth={2} />
+                      <p className="text-sm font-medium text-foreground">{calculatedResult.label}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-muted-foreground">출발</p>
+                        <p className="text-3xl font-black text-foreground">
+                          {calculatedResult.shuttleTime}
+                        </p>
+                      </div>
+                      {'arrivalTime' in calculatedResult && calculatedResult.arrivalTime && (
+                        <div className="text-right">
+                          <p className="text-xs text-muted-foreground">도착</p>
+                          <p className="text-2xl font-bold text-foreground">
+                            {calculatedResult.arrivalTime}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-3xl font-black text-foreground">{calculatedResult.shuttleTime}</p>
-                  <Button size="sm" className="w-full mt-2">
-                    알람 설정
-                  </Button>
                 </>
               )}
             </div>
@@ -269,40 +347,68 @@ const Index = () => {
               </Button>
             </div>
             
-            <Carousel className="w-full">
-              <CarouselContent>
-                {dayTypes.map((dayType) => {
-                  const dayShuttles = allShuttles.filter(s => s.day_type === dayType);
-                  return (
-                    <CarouselItem key={dayType}>
-                      <div className="space-y-3">
-                        <p className="text-center text-sm font-bold text-primary">{dayType}</p>
-                        <div className="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto">
-                          {dayShuttles.map((shuttle) => (
-                            <div 
-                              key={shuttle.id}
-                              className="bg-secondary rounded-lg p-3 space-y-1"
-                            >
-                              <p className="text-lg font-bold text-foreground">
-                                {shuttle.departure_time.substring(0, 5)}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {shuttle.destination}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {shuttle.duration_minutes}분
-                              </p>
+            {!isSemesterActive ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">방학 중에는 셔틀이 운행하지 않습니다</p>
+              </div>
+            ) : (
+              <Carousel className="w-full">
+                <CarouselContent>
+                  {dayTypes.map((dayType) => {
+                    const dayShuttles = allShuttles.filter(s => s.day_type === dayType);
+                    return (
+                      <CarouselItem key={dayType}>
+                        <div className="space-y-3">
+                          <p className="text-center text-sm font-bold text-primary">
+                            {dayType} {dayType === currentDayType && "(오늘)"}
+                          </p>
+                          {dayShuttles.length === 0 ? (
+                            <div className="text-center py-8">
+                              <p className="text-muted-foreground">운행 정보가 없습니다</p>
                             </div>
-                          ))}
+                          ) : (
+                            <div className="grid grid-cols-1 gap-3 max-h-[300px] overflow-y-auto">
+                              {dayShuttles.map((shuttle) => (
+                                <div 
+                                  key={shuttle.id}
+                                  className="bg-secondary rounded-lg p-3 space-y-2"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <p className="text-xs text-muted-foreground">출발</p>
+                                      <p className="text-2xl font-bold text-foreground">
+                                        {shuttle.departure_time.substring(0, 5)}
+                                      </p>
+                                    </div>
+                                    <div className="text-center px-2">
+                                      <p className="text-xs text-muted-foreground">→</p>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-xs text-muted-foreground">도착</p>
+                                      <p className="text-xl font-bold text-foreground">
+                                        {shuttle.arrival_time?.substring(0, 5) || "-"}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground">
+                                    학교앞 → 조치원역
+                                  </p>
+                                  {shuttle.notes && (
+                                    <p className="text-xs text-primary">{shuttle.notes}</p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    </CarouselItem>
-                  );
-                })}
-              </CarouselContent>
-              <CarouselPrevious className="left-2" />
-              <CarouselNext className="right-2" />
-            </Carousel>
+                      </CarouselItem>
+                    );
+                  })}
+                </CarouselContent>
+                <CarouselPrevious className="left-2" />
+                <CarouselNext className="right-2" />
+              </Carousel>
+            )}
           </CardContent>
         </Card>
       </div>
