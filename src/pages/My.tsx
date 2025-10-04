@@ -410,6 +410,51 @@ const My = () => {
             </Card>
           </>
         )}
+
+        {/* 로그인 없이도 표시되는 섹션들 */}
+        {!user && (
+          <>
+            {/* 현재 등록된 기차 시간 - 로그인 필요 */}
+            <Card className="shadow-soft">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
+                  <Bell className="w-5 h-5 text-primary" />
+                  현재 등록된 기차 시간
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    로그인이 필요한 서비스입니다
+                  </p>
+                  <Button onClick={handleKakaoLogin} size="sm">
+                    로그인하기
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 알림 설정 관리 - 로그인 필요 */}
+            <Card className="shadow-soft">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
+                  <Bell className="w-5 h-5 text-primary" />
+                  알림 설정 관리
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    로그인이 필요한 서비스입니다
+                  </p>
+                  <Button onClick={handleKakaoLogin} size="sm">
+                    로그인하기
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
       <BottomNav />
     </div>
