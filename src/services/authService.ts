@@ -4,10 +4,13 @@ export interface SignUpData {
   email: string;
   password: string;
   confirmPassword: string;
+  username: string;
+  full_name: string;
   school: string;
   department: string;
   student_id: string;
   phone: string;
+  id_number: string;
 }
 
 export interface SignInData {
@@ -36,17 +39,6 @@ export const signUp = async (data: SignUpData) => {
     // 중복 검사 (간단하고 안전하게)
     console.log('중복 검사 중...');
     
-    // 이메일 중복 확인
-    const { data: existingEmail } = await supabase
-      .from('profiles')
-      .select('email')
-      .eq('email', data.email)
-      .maybeSingle();
-    
-    if (existingEmail) {
-      throw new Error('이미 사용 중인 이메일입니다.');
-    }
-
     // 학번 중복 확인
     const { data: existingStudentId } = await supabase
       .from('profiles')
@@ -79,10 +71,13 @@ export const signUp = async (data: SignUpData) => {
       password: data.password,
       options: {
         data: {
+          username: data.username,
+          full_name: data.full_name,
           school: data.school,
           department: data.department,
           student_id: data.student_id,
           phone: data.phone,
+          id_number: data.id_number,
         },
       },
     });
@@ -204,24 +199,6 @@ export const updateUserProfile = async (updates: Partial<Omit<SignUpData, 'passw
   } catch (error) {
     console.error('프로필 업데이트 오류:', error);
     throw error;
-  }
-};
-
-/**
- * 이메일 중복 확인
- */
-export const checkEmailAvailability = async (email: string): Promise<boolean> => {
-  try {
-    const { data } = await supabase
-      .from('profiles')
-      .select('email')
-      .eq('email', email)
-      .maybeSingle();
-    
-    return !data; // 데이터가 없으면 사용 가능
-  } catch (error) {
-    console.error('이메일 중복 확인 오류:', error);
-    return false;
   }
 };
 

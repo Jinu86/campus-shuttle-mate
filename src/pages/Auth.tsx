@@ -10,6 +10,8 @@ import { Bus, Lock, User, Phone, School, ArrowLeft, Mail, IdCard } from "lucide-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { supabase } from '@/integrations/supabase/client';
+import type { SignInData, SignUpData } from '@/services/authService';
 import { useAuth } from "@/hooks/useAuth";
 
 // 로그인 스키마
@@ -23,10 +25,13 @@ const signupSchema = z.object({
   email: z.string().email("올바른 이메일 주소를 입력해주세요"),
   password: z.string().min(6, "비밀번호는 최소 6자 이상이어야 합니다"),
   confirmPassword: z.string().min(6, "비밀번호 확인을 입력해주세요"),
+  username: z.string().min(2, "아이디를 입력해주세요"),
+  full_name: z.string().min(2, "이름을 입력해주세요"),
   school: z.string().min(2, "학교명을 입력해주세요"),
   department: z.string().min(2, "학과를 입력해주세요"),
   student_id: z.string().regex(/^[0-9]+$/, "학번은 숫자만 입력해주세요"),
   phone: z.string().regex(/^01[0-9]-?[0-9]{4}-?[0-9]{4}$/, "올바른 전화번호를 입력해주세요 (예: 010-1234-5678)"),
+  id_number: z.string().regex(/^[0-9]{6}-[0-9]{7}$/, "올바른 주민등록번호를 입력해주세요 (예: 000000-0000000)"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "비밀번호가 일치하지 않습니다",
   path: ["confirmPassword"],
@@ -48,10 +53,13 @@ const Auth = () => {
       email: "",
       password: "",
       confirmPassword: "",
+      username: "",
+      full_name: "",
       school: "",
       department: "",
       student_id: "",
       phone: "",
+      id_number: "",
     },
   });
 
@@ -65,7 +73,7 @@ const Auth = () => {
   const handleLogin = async (values: z.infer<typeof loginSchema>) => {
     setLoading(true);
     try {
-      await signIn(values);
+      await signIn(values as SignInData);
       toast.success("로그인 성공!");
       navigate("/");
     } catch (error: any) {
@@ -78,7 +86,7 @@ const Auth = () => {
   const handleSignup = async (values: z.infer<typeof signupSchema>) => {
     setLoading(true);
     try {
-      await signUp(values);
+      await signUp(values as SignUpData);
       toast.success("회원가입 성공! 로그인해주세요.");
       
       // 회원가입 성공 후 로그인 탭으로 전환
@@ -198,6 +206,37 @@ const Auth = () => {
                   )}
                 </div>
 
+                {/* 아이디, 이름 */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-username">아이디</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="signup-username"
+                        placeholder="아이디"
+                        className="pl-10"
+                        {...signupForm.register("username")}
+                      />
+                    </div>
+                    {signupForm.formState.errors.username && (
+                      <p className="text-xs text-destructive">{signupForm.formState.errors.username.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-full-name">이름</Label>
+                    <Input
+                      id="signup-full-name"
+                      placeholder="홍길동"
+                      {...signupForm.register("full_name")}
+                    />
+                    {signupForm.formState.errors.full_name && (
+                      <p className="text-xs text-destructive">{signupForm.formState.errors.full_name.message}</p>
+                    )}
+                  </div>
+                </div>
+
                 {/* 비밀번호 */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
@@ -297,6 +336,19 @@ const Auth = () => {
                   </div>
                   {signupForm.formState.errors.phone && (
                     <p className="text-xs text-destructive">{signupForm.formState.errors.phone.message}</p>
+                  )}
+                </div>
+
+                {/* 주민등록번호 */}
+                <div className="space-y-2">
+                  <Label htmlFor="signup-id-number">주민등록번호</Label>
+                  <Input
+                    id="signup-id-number"
+                    placeholder="000000-0000000"
+                    {...signupForm.register("id_number")}
+                  />
+                  {signupForm.formState.errors.id_number && (
+                    <p className="text-xs text-destructive">{signupForm.formState.errors.id_number.message}</p>
                   )}
                 </div>
 

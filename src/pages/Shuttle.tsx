@@ -58,7 +58,7 @@ const Shuttle = () => {
       const filteredData = filterPastShuttles(data || []);
       
       const schoolDepartures = filteredData.filter(s => s.destination === "조치원역");
-      const stationDepartures = filteredData.filter(s => s.destination === "학교앞");
+      const stationDepartures = filteredData.filter(s => s.destination === "학교");
       
       setSchoolShuttles(schoolDepartures);
       setStationShuttles(stationDepartures);
