@@ -60,6 +60,7 @@ export type Database = {
           meal_type: string
           menu_items: string[]
           price: number | null
+          school_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -68,6 +69,7 @@ export type Database = {
           meal_type: string
           menu_items: string[]
           price?: number | null
+          school_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -76,8 +78,17 @@ export type Database = {
           meal_type?: string
           menu_items?: string[]
           price?: number | null
+          school_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cafeteria_menus_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       coupons: {
         Row: {
@@ -87,6 +98,7 @@ export type Database = {
           is_active: boolean
           issued_count: number
           max_issuance: number | null
+          school_id: string | null
           store_name: string
           terms: string | null
           valid_from: string
@@ -99,6 +111,7 @@ export type Database = {
           is_active?: boolean
           issued_count?: number
           max_issuance?: number | null
+          school_id?: string | null
           store_name: string
           terms?: string | null
           valid_from?: string
@@ -111,12 +124,21 @@ export type Database = {
           is_active?: boolean
           issued_count?: number
           max_issuance?: number | null
+          school_id?: string | null
           store_name?: string
           terms?: string | null
           valid_from?: string
           valid_until?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "coupons_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -130,6 +152,7 @@ export type Database = {
           referral_code: string | null
           referred_by: string | null
           school: string | null
+          school_id: string | null
           student_id: string | null
           username: string | null
         }
@@ -144,6 +167,7 @@ export type Database = {
           referral_code?: string | null
           referred_by?: string | null
           school?: string | null
+          school_id?: string | null
           student_id?: string | null
           username?: string | null
         }
@@ -158,10 +182,19 @@ export type Database = {
           referral_code?: string | null
           referred_by?: string | null
           school?: string | null
+          school_id?: string | null
           student_id?: string | null
           username?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       referral_history: {
         Row: {
@@ -202,26 +235,112 @@ export type Database = {
           },
         ]
       }
+      school_requests: {
+        Row: {
+          additional_info: string | null
+          admin_note: string | null
+          campus_name: string | null
+          created_at: string | null
+          id: string
+          requester_email: string
+          requester_name: string
+          requester_phone: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          school_name: string
+          station_name: string
+          status: string | null
+        }
+        Insert: {
+          additional_info?: string | null
+          admin_note?: string | null
+          campus_name?: string | null
+          created_at?: string | null
+          id?: string
+          requester_email: string
+          requester_name: string
+          requester_phone: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          school_name: string
+          station_name: string
+          status?: string | null
+        }
+        Update: {
+          additional_info?: string | null
+          admin_note?: string | null
+          campus_name?: string | null
+          created_at?: string | null
+          id?: string
+          requester_email?: string
+          requester_name?: string
+          requester_phone?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          school_name?: string
+          station_name?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
+      schools: {
+        Row: {
+          created_at: string | null
+          display_name: string
+          id: string
+          is_active: boolean | null
+          name: string
+          station_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_name: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          station_name: string
+        }
+        Update: {
+          created_at?: string | null
+          display_name?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          station_name?: string
+        }
+        Relationships: []
+      }
       semester_status: {
         Row: {
           id: string
           is_semester_active: boolean
+          school_id: string | null
           updated_at: string | null
           updated_by: string | null
         }
         Insert: {
           id?: string
           is_semester_active?: boolean
+          school_id?: string | null
           updated_at?: string | null
           updated_by?: string | null
         }
         Update: {
           id?: string
           is_semester_active?: boolean
+          school_id?: string | null
           updated_at?: string | null
           updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "semester_status_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shuttle_schedules: {
         Row: {
@@ -233,6 +352,7 @@ export type Database = {
           duration_minutes: number
           id: string
           notes: string | null
+          school_id: string | null
         }
         Insert: {
           arrival_time?: string | null
@@ -243,6 +363,7 @@ export type Database = {
           duration_minutes: number
           id?: string
           notes?: string | null
+          school_id?: string | null
         }
         Update: {
           arrival_time?: string | null
@@ -253,8 +374,17 @@ export type Database = {
           duration_minutes?: number
           id?: string
           notes?: string | null
+          school_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "shuttle_schedules_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trips: {
         Row: {
