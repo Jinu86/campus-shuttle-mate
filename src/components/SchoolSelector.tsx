@@ -30,7 +30,7 @@ export default function SchoolSelector({ open, onOpenChange }: SchoolSelectorPro
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           {!showRequestForm ? (
             <div className="space-y-6">
               <div className="text-center">
