@@ -1,21 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const requestSchema = z.object({
   school_name: z.string().min(2, "학교명을 입력해주세요"),
   campus_name: z.string().optional(),
-  station_name: z.string().min(2, "가장 가까운 기차역을 입력해주세요"),
-  requester_name: z.string().min(2, "성함을 입력해주세요"),
-  requester_email: z.string().email("올바른 이메일을 입력해주세요"),
-  requester_phone: z.string().regex(/^01[0-9]-?[0-9]{4}-?[0-9]{4}$/, "올바른 연락처를 입력해주세요"),
   additional_info: z.string().optional(),
 });
 
@@ -28,12 +27,32 @@ interface SchoolRequestFormProps {
 export default function SchoolRequestForm({ onClose }: SchoolRequestFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { user, profile } = useAuth();
   
   const form = useForm<RequestFormData>({
     resolver: zodResolver(requestSchema),
   });
 
+  useEffect(() => {
+    if (!user) {
+      toast({
+        title: "로그인이 필요합니다",
+        description: "학교 추가 요청은 로그인 후 이용 가능합니다.",
+        variant: "destructive",
+      });
+    }
+  }, [user, toast]);
+
   const handleSubmit = async (values: RequestFormData) => {
+    if (!user || !profile) {
+      toast({
+        title: "로그인이 필요합니다",
+        description: "학교 추가 요청은 로그인 후 이용 가능합니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
@@ -42,10 +61,10 @@ export default function SchoolRequestForm({ onClose }: SchoolRequestFormProps) {
         .insert({
           school_name: values.school_name,
           campus_name: values.campus_name || null,
-          station_name: values.station_name,
-          requester_name: values.requester_name,
-          requester_email: values.requester_email,
-          requester_phone: values.requester_phone,
+          station_name: "조치원역", // 기본값
+          requester_name: profile.full_name || "미입력",
+          requester_email: user.email || "미입력",
+          requester_phone: profile.phone || "미입력",
           additional_info: values.additional_info || null,
           status: "pending",
         });
@@ -69,6 +88,30 @@ export default function SchoolRequestForm({ onClose }: SchoolRequestFormProps) {
       setIsSubmitting(false);
     }
   };
+
+  if (!user) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold">대학 추가 요청</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            서비스 제공을 원하시는 대학 정보를 입력해주세요
+          </p>
+        </div>
+
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            학교 추가 요청은 로그인 후 이용 가능합니다.
+          </AlertDescription>
+        </Alert>
+
+        <Button variant="outline" onClick={onClose} className="w-full">
+          닫기
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -101,63 +144,6 @@ export default function SchoolRequestForm({ onClose }: SchoolRequestFormProps) {
             placeholder="예: 세종캠퍼스"
             {...form.register("campus_name")}
           />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="station_name">가장 가까운 기차역 *</Label>
-          <Input
-            id="station_name"
-            placeholder="예: 조치원역"
-            {...form.register("station_name")}
-          />
-          {form.formState.errors.station_name && (
-            <p className="text-sm text-destructive">
-              {form.formState.errors.station_name.message}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="requester_name">성함 *</Label>
-          <Input
-            id="requester_name"
-            placeholder="홍길동"
-            {...form.register("requester_name")}
-          />
-          {form.formState.errors.requester_name && (
-            <p className="text-sm text-destructive">
-              {form.formState.errors.requester_name.message}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="requester_email">이메일 *</Label>
-          <Input
-            id="requester_email"
-            type="email"
-            placeholder="hong@example.com"
-            {...form.register("requester_email")}
-          />
-          {form.formState.errors.requester_email && (
-            <p className="text-sm text-destructive">
-              {form.formState.errors.requester_email.message}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="requester_phone">연락처 *</Label>
-          <Input
-            id="requester_phone"
-            placeholder="010-1234-5678"
-            {...form.register("requester_phone")}
-          />
-          {form.formState.errors.requester_phone && (
-            <p className="text-sm text-destructive">
-              {form.formState.errors.requester_phone.message}
-            </p>
-          )}
         </div>
 
         <div className="space-y-2">
