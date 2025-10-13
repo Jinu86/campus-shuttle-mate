@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useSchoolContext } from "@/contexts/SchoolContext";
 import BottomNav from "@/components/BottomNav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { Bus, Train, ArrowLeftRight } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
+import SchoolSelector from "@/components/SchoolSelector";
 
 const trainSchedules = {
   "mugunghwa-3410": { name: "무궁화 3410", arrivalTime: "14:30", departureFromSeoul: "12:45" },
@@ -17,12 +19,16 @@ const trainSchedules = {
 
 const Index = () => {
   const navigate = useNavigate();
+  const { selectedSchool, isSchoolSelected } = useSchoolContext();
+  const [showSchoolSelector, setShowSchoolSelector] = useState(false);
   const [allShuttles, setAllShuttles] = useState<any[]>([]);
   const [selectedTrain, setSelectedTrain] = useState<string>("mugunghwa-3410");
   const [tripType, setTripType] = useState<"board" | "alight">("alight");
   const [isSemesterActive, setIsSemesterActive] = useState(true);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
   const [shuttleDirection, setShuttleDirection] = useState<"toStation" | "toSchool">("toStation");
+  
+  const stationName = selectedSchool?.station_name || "--역";
 
   // Get current day
   const getCurrentDayName = () => {
@@ -46,20 +52,28 @@ const Index = () => {
   const dayTypes = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"];
 
   useEffect(() => {
-    loadShuttles();
+    if (selectedSchool) {
+      loadShuttles();
+    }
     // Set initial carousel index to current day
     const currentIndex = dayTypes.indexOf(currentDayName);
     if (currentIndex !== -1) {
       setCurrentDayIndex(currentIndex);
     }
-  }, []);
+  }, [selectedSchool]);
 
   const loadShuttles = async () => {
+    if (!selectedSchool) {
+      setAllShuttles([]);
+      return;
+    }
+    
     try {
       // Load shuttle schedules
       const { data: shuttleData, error: shuttleError } = await supabase
         .from("shuttle_schedules")
         .select("id, day_type, destination, departure_time, arrival_time, notes")
+        .eq("school_id", selectedSchool.id)
         .order("departure_time");
 
       if (shuttleError) throw shuttleError;
@@ -69,6 +83,7 @@ const Index = () => {
       const { data: semesterData, error: semesterError } = await supabase
         .from("semester_status")
         .select("is_semester_active")
+        .eq("school_id", selectedSchool.id)
         .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -156,10 +171,19 @@ const Index = () => {
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-10">
-        <div className="max-w-md mx-auto px-5 py-4">
+        <div className="max-w-md mx-auto px-5 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold text-foreground">바로 셔틀</h1>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowSchoolSelector(true)}
+          >
+            {selectedSchool?.display_name || "대학 선택"}
+          </Button>
         </div>
       </header>
+      
+      <SchoolSelector open={showSchoolSelector} onOpenChange={setShowSchoolSelector} />
 
       <div className="max-w-md mx-auto px-5 py-6 space-y-4">
         {/* 운행 상태 알림 */}
@@ -187,7 +211,7 @@ const Index = () => {
             return h * 60 + m > currentMinutes;
           });
 
-          const nextSchoolShuttle = findNext("조치원역");
+          const nextSchoolShuttle = findNext(stationName);
           const nextStationShuttle = findNext("학교");
 
           return (
@@ -199,12 +223,12 @@ const Index = () => {
                     <p className="text-sm font-medium text-foreground">학교 출발</p>
                   </div>
                   <p className="text-3xl font-black text-foreground">
-                    {isSaturday || !nextSchoolShuttle ? "--:--" : nextSchoolShuttle.departure_time.substring(0, 5)}
+                    {!isSchoolSelected || isSaturday || !nextSchoolShuttle ? "--:--" : nextSchoolShuttle.departure_time.substring(0, 5)}
                   </p>
                   <div>
                     <p className="text-xs text-muted-foreground">도착</p>
                     <p className="text-lg font-bold text-foreground">
-                      {isSaturday || !nextSchoolShuttle ? "--:--" : (nextSchoolShuttle.arrival_time?.substring(0, 5) || "-")}
+                      {!isSchoolSelected || isSaturday || !nextSchoolShuttle ? "--:--" : (nextSchoolShuttle.arrival_time?.substring(0, 5) || "-")}
                     </p>
                   </div>
                 </CardContent>
@@ -214,15 +238,15 @@ const Index = () => {
                 <CardContent className="p-4 space-y-2">
                   <div className="flex items-center gap-1.5">
                     <Bus className="w-5 h-5 text-primary flex-shrink-0" strokeWidth={2} />
-                    <p className="text-sm font-medium text-foreground">조치원역 출발</p>
+                    <p className="text-sm font-medium text-foreground">{stationName} 출발</p>
                   </div>
                   <p className="text-3xl font-black text-foreground">
-                    {isSaturday || !nextStationShuttle ? "--:--" : nextStationShuttle.departure_time.substring(0, 5)}
+                    {!isSchoolSelected || isSaturday || !nextStationShuttle ? "--:--" : nextStationShuttle.departure_time.substring(0, 5)}
                   </p>
                   <div>
                     <p className="text-xs text-muted-foreground">도착</p>
                     <p className="text-lg font-bold text-foreground">
-                      {isSaturday || !nextStationShuttle ? "--:--" : (nextStationShuttle.arrival_time?.substring(0, 5) || "-")}
+                      {!isSchoolSelected || isSaturday || !nextStationShuttle ? "--:--" : (nextStationShuttle.arrival_time?.substring(0, 5) || "-")}
                     </p>
                   </div>
                 </CardContent>
@@ -267,22 +291,22 @@ const Index = () => {
                 <SelectItem value="mugunghwa-3410">
                   {trainSchedules["mugunghwa-3410"].name}{" "}
                   {tripType === "alight" 
-                    ? `${trainSchedules["mugunghwa-3410"].arrivalTime} 조치원 도착`
-                    : `${trainSchedules["mugunghwa-3410"].departureFromSeoul} 조치원 출발`
+                    ? `${trainSchedules["mugunghwa-3410"].arrivalTime} ${stationName === "--역" ? "--역" : stationName.replace("역", "")} 도착`
+                    : `${trainSchedules["mugunghwa-3410"].departureFromSeoul} ${stationName === "--역" ? "--역" : stationName.replace("역", "")} 출발`
                   }
                 </SelectItem>
                 <SelectItem value="ktx-101">
                   {trainSchedules["ktx-101"].name}{" "}
                   {tripType === "alight"
-                    ? `${trainSchedules["ktx-101"].arrivalTime} 조치원 도착`
-                    : `${trainSchedules["ktx-101"].departureFromSeoul} 조치원 출발`
+                    ? `${trainSchedules["ktx-101"].arrivalTime} ${stationName === "--역" ? "--역" : stationName.replace("역", "")} 도착`
+                    : `${trainSchedules["ktx-101"].departureFromSeoul} ${stationName === "--역" ? "--역" : stationName.replace("역", "")} 출발`
                   }
                 </SelectItem>
                 <SelectItem value="itx-203">
                   {trainSchedules["itx-203"].name}{" "}
                   {tripType === "alight"
-                    ? `${trainSchedules["itx-203"].arrivalTime} 조치원 도착`
-                    : `${trainSchedules["itx-203"].departureFromSeoul} 조치원 출발`
+                    ? `${trainSchedules["itx-203"].arrivalTime} ${stationName === "--역" ? "--역" : stationName.replace("역", "")} 도착`
+                    : `${trainSchedules["itx-203"].departureFromSeoul} ${stationName === "--역" ? "--역" : stationName.replace("역", "")} 출발`
                   }
                 </SelectItem>
               </SelectContent>
@@ -292,9 +316,9 @@ const Index = () => {
               {tripType === "alight" ? (
                 <>
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">조치원역 도착</p>
+                    <p className="text-sm text-muted-foreground">{stationName} 도착</p>
                     <p className="text-2xl font-bold text-foreground">
-                      {trainSchedules[selectedTrain as keyof typeof trainSchedules].arrivalTime}
+                      {!isSchoolSelected ? "--:--" : trainSchedules[selectedTrain as keyof typeof trainSchedules].arrivalTime}
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -306,10 +330,10 @@ const Index = () => {
                       <div>
                         <p className="text-xs text-muted-foreground">출발</p>
                         <p className="text-3xl font-black text-foreground">
-                          {calculatedResult.shuttleTime}
+                          {!isSchoolSelected ? "--:--" : calculatedResult.shuttleTime}
                         </p>
                       </div>
-                      {'arrivalTime' in calculatedResult && calculatedResult.arrivalTime && (
+                      {isSchoolSelected && 'arrivalTime' in calculatedResult && calculatedResult.arrivalTime && (
                         <div className="text-right">
                           <p className="text-xs text-muted-foreground">도착</p>
                           <p className="text-2xl font-bold text-foreground">
@@ -318,7 +342,7 @@ const Index = () => {
                         </div>
                       )}
                     </div>
-                    {'waitTime' in calculatedResult && calculatedResult.waitTime > 0 && (
+                    {isSchoolSelected && 'waitTime' in calculatedResult && calculatedResult.waitTime > 0 && (
                       <p className="text-sm text-muted-foreground">
                         ({calculatedResult.waitTime}분 대기)
                       </p>
@@ -328,9 +352,9 @@ const Index = () => {
               ) : (
                 <>
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">조치원역 출발 (서울행)</p>
+                    <p className="text-sm text-muted-foreground">{stationName} 출발 (서울행)</p>
                     <p className="text-2xl font-bold text-foreground">
-                      {'trainDeparture' in calculatedResult && calculatedResult.trainDeparture}
+                      {!isSchoolSelected ? "--:--" : ('trainDeparture' in calculatedResult && calculatedResult.trainDeparture)}
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -342,10 +366,10 @@ const Index = () => {
                       <div>
                         <p className="text-xs text-muted-foreground">출발</p>
                         <p className="text-3xl font-black text-foreground">
-                          {calculatedResult.shuttleTime}
+                          {!isSchoolSelected ? "--:--" : calculatedResult.shuttleTime}
                         </p>
                       </div>
-                      {'arrivalTime' in calculatedResult && calculatedResult.arrivalTime && (
+                      {isSchoolSelected && 'arrivalTime' in calculatedResult && calculatedResult.arrivalTime && (
                         <div className="text-right">
                           <p className="text-xs text-muted-foreground">도착</p>
                           <p className="text-2xl font-bold text-foreground">
@@ -377,7 +401,7 @@ const Index = () => {
                     <ArrowLeftRight className="h-4 w-4" />
                   </Button>
                   <span className="text-sm font-medium text-foreground">
-                    {shuttleDirection === "toStation" ? "조치원역 출발" : "학교 출발"}
+                    {shuttleDirection === "toStation" ? `${stationName} 출발` : "학교 출발"}
                   </span>
                 </div>
               </div>
@@ -391,7 +415,11 @@ const Index = () => {
               </Button>
             </div>
             
-            {!isSemesterActive ? (
+            {!isSchoolSelected ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">학교를 선택해주세요</p>
+              </div>
+            ) : !isSemesterActive ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">방학 중에는 셔틀이 운행하지 않습니다</p>
               </div>
@@ -405,7 +433,7 @@ const Index = () => {
                     const currentMinutes = now.getHours() * 60 + now.getMinutes();
                     
                     // 목적지에 따라 필터링
-                    const destination = shuttleDirection === "toStation" ? "조치원역" : "학교";
+                    const destination = shuttleDirection === "toStation" ? stationName : "학교";
                     let dayShuttles = dbDayType 
                       ? allShuttles.filter(s => s.day_type === dbDayType && s.destination === destination) 
                       : [];
