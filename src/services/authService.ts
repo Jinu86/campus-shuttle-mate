@@ -73,7 +73,7 @@ export const signUp = async (data: SignUpData) => {
         data: {
           username: data.username,
           full_name: data.full_name,
-          school: data.school,
+          school_id: data.school_id,
           department: data.department,
           student_id: data.student_id,
           phone: data.phone,
