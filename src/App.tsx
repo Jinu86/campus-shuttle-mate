@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { SchoolProvider, useSchoolContext } from "@/contexts/SchoolContext";
+import SchoolSelector from "@/components/SchoolSelector";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
@@ -16,11 +18,21 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+const AppContent = () => {
+  const { isSchoolSelected, loading } = useSchoolContext();
+  const [showSelector, setShowSelector] = useState(false);
+
+  useEffect(() => {
+    if (!loading && !isSchoolSelected) {
+      setShowSelector(true);
+    }
+  }, [loading, isSchoolSelected]);
+
+  return (
+    <>
       <Toaster />
       <Sonner />
+      <SchoolSelector open={showSelector} onOpenChange={setShowSelector} />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
@@ -31,11 +43,20 @@ const App = () => (
           <Route path="/cafeteria" element={<Cafeteria />} />
           <Route path="/my" element={<My />} />
           <Route path="/coupons" element={<Coupons />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
-    </TooltipProvider>
+    </>
+  );
+};
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <SchoolProvider>
+      <TooltipProvider>
+        <AppContent />
+      </TooltipProvider>
+    </SchoolProvider>
   </QueryClientProvider>
 );
 

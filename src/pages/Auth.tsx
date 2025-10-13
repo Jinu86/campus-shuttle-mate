@@ -6,13 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Bus, Lock, User, Phone, School, ArrowLeft, Mail, IdCard } from "lucide-react";
+import { Bus, Lock, User, Phone, ArrowLeft, Mail, IdCard, Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { supabase } from '@/integrations/supabase/client';
 import type { SignInData, SignUpData } from '@/services/authService';
 import { useAuth } from "@/hooks/useAuth";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useSchoolContext } from "@/contexts/SchoolContext";
+import SchoolRequestForm from "@/components/SchoolRequestForm";
 
 // 로그인 스키마
 const loginSchema = z.object({
@@ -27,7 +31,7 @@ const signupSchema = z.object({
   confirmPassword: z.string().min(6, "비밀번호 확인을 입력해주세요"),
   username: z.string().min(2, "아이디를 입력해주세요"),
   full_name: z.string().min(2, "이름을 입력해주세요"),
-  school: z.string().min(2, "학교명을 입력해주세요"),
+  school_id: z.string().uuid("학교를 선택해주세요"),
   department: z.string().min(2, "학과를 입력해주세요"),
   student_id: z.string().regex(/^[0-9]+$/, "학번은 숫자만 입력해주세요"),
   phone: z.string().regex(/^01[0-9]-?[0-9]{4}-?[0-9]{4}$/, "올바른 전화번호를 입력해주세요 (예: 010-1234-5678)"),
@@ -41,6 +45,8 @@ const Auth = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
+  const { schools } = useSchoolContext();
+  const [showRequestForm, setShowRequestForm] = useState(false);
 
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -55,7 +61,7 @@ const Auth = () => {
       confirmPassword: "",
       username: "",
       full_name: "",
-      school: "",
+      school_id: "",
       department: "",
       student_id: "",
       phone: "",
@@ -278,17 +284,34 @@ const Auth = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="signup-school">학교</Label>
-                    <div className="relative">
-                      <School className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-school"
-                        placeholder="○○대학교"
-                        className="pl-10"
-                        {...signupForm.register("school")}
-                      />
-                    </div>
-                    {signupForm.formState.errors.school && (
-                      <p className="text-xs text-destructive">{signupForm.formState.errors.school.message}</p>
+                    <Select
+                      onValueChange={(value) => {
+                        if (value === 'request-new') {
+                          setShowRequestForm(true);
+                        } else {
+                          signupForm.setValue("school_id", value);
+                        }
+                      }}
+                    >
+                      <SelectTrigger id="signup-school">
+                        <SelectValue placeholder="학교를 선택하세요" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {schools.map(school => (
+                          <SelectItem key={school.id} value={school.id}>
+                            {school.display_name}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="request-new" className="text-primary font-semibold">
+                          <div className="flex items-center gap-2">
+                            <Plus className="h-4 w-4" />
+                            우리 대학이 없어요
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {signupForm.formState.errors.school_id && (
+                      <p className="text-xs text-destructive">{signupForm.formState.errors.school_id.message}</p>
                     )}
                   </div>
 
@@ -368,6 +391,13 @@ const Auth = () => {
           </p>
         </CardContent>
       </Card>
+
+      {/* 대학 추가 요청 다이얼로그 */}
+      <Dialog open={showRequestForm} onOpenChange={setShowRequestForm}>
+        <DialogContent>
+          <SchoolRequestForm onClose={() => setShowRequestForm(false)} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

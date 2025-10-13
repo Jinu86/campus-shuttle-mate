@@ -6,7 +6,7 @@ export interface SignUpData {
   confirmPassword: string;
   username: string;
   full_name: string;
-  school: string;
+  school_id: string;
   department: string;
   student_id: string;
   phone: string;
